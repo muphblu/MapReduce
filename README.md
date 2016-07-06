@@ -32,6 +32,6 @@
 - type get_type(path)
 
 ## Questions
-Slava: Can we use plain structure for storage servers (we can use)
-Slava: can we store file size on the namingServer?
-Slava: Can we unite rmdir and delete?
+1. Slava: Can we use plain structure for storage servers (we can use)
+2. Slava: can we store file size on the namingServer?
+3. Slava: Can we unite rmdir and delete?
