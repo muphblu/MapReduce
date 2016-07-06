@@ -30,6 +30,7 @@
 - status mkdir(path)
 - status rmdir(path)
 - type get_type(path)
+
 ## Questions
 Slava: Can we use plain structure for storage servers (we can use)
 Slava: can we store file size on the namingServer?
