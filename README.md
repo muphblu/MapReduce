@@ -16,8 +16,8 @@
 
 ### StorageServer
 started on ports `8000 - (8000+n)` where `n` number of servers
-- byte[] read(serverId, id) // read chunk from server
-- write(list[]) //where list contains tuples(chunkId, content)
+- byte[] read(id) // read chunk from server
+- write(chunk_id, content) //where list contains tuples(chunkId, content)
 - size()
 - status delete(list[]) // lsit of chunkIds
 - size: ??
