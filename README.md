@@ -15,6 +15,7 @@
 ## Structure:
 
 ### StorageServer
+started on ports `8000 - (8000+n)`` where `n` number of servers
 - byte[] read(serverId, id) // read chunk from server
 - write(list[]) //where list contains tuples(chunkId, content)
 - size()
@@ -22,6 +23,7 @@
 - size: ??
 
 ### NamingServer
+started on `8000` port
 - `listTuples read(path) // returns ordered list of tuples where key is serverId and value is chunkId`
 - `listTuples write(path, countChunks) // returns ordered list with tuples where key is serverId and value is tuple (chunkNumber, chunksIds)`
 - `status delete(path) // Name server tells storages to delete particular chunks`
