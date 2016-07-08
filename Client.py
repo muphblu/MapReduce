@@ -1,5 +1,11 @@
 class Client:
     def __init__(self, port):
+        # TODO: create proxies for storage servers and one for naming server
+        # TODO: address for naming server in params
+        # TODO: receive storage servers' addresses from naming server
+        #
+        #
+        # TODO: emulate console
         s = xmlrpclib.ServerProxy('http://localhost:' + port)
         self.server.register_function(self.read)
         self.server.register_function(self.write)
@@ -55,3 +61,5 @@ class Client:
         :return:
         """
         pass
+
+
