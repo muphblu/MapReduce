@@ -23,7 +23,7 @@
 
 ### NamingServer
 - `listTuples read(path) // returns ordered list of tuples where key is serverId and value is chunkId`
-- `listTuples write(path, countChunks) // returns ordered list with tuples where key is serverId and value is list of tuples (chunkNumber, chunksIds)`
+- `listTuples write(path, countChunks) // returns ordered list with tuples where key is serverId and value is tuple (chunkNumber, chunksIds)`
 - `status delete(path) // Name server tells storages to delete particular chunks`
 - `size: ??`
 - `list[] list(path) // list of files/directories`
