@@ -18,6 +18,7 @@ class Client:
         Add proxies for all storages by coordinates received from naming server
         :return:
         """
+        # IndexOutOfBound exception. Do not know how to solve
         storage_list = self.naming_server.read(path)
         for storage in storage_list:
             # storage[0] is a string - ip:port
@@ -91,6 +92,12 @@ class Client:
 address = 'localhost'
 port = 80
 path = "path1"
+
+action = 0
+while action != 'stop':
+    action = input("Input the following commands:: \n"
+                   "Stop - Stop the client \n"
+                   "Read(<path of a file>) - Read a file")
 
 client = Client(address, port)
 print('Connection to naming server is established')
