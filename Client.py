@@ -87,21 +87,45 @@ class Client:
         """
         pass
 
+    def sizeQuery(self, path):
+        """
+        Size a query
+        :param path: Directory name in FS that is deleted
+        :return:
+        """
+        pass
+
+    def handleUserInput(self, input):
+        """
+        Handles user's input
+        :param input: User's input through keyboard
+        :return:
+        """
+        if 'read' in input.lower():
+            path_to_file = input.split('(', 3)[1][:-1]
+            result = self.read(path_to_file)
+            print(result)
+        elif 'write' in input.lower():
+            path_to_file = input.split('(', 3)[1][:-1]
+            self.write(path_to_file[1])
+
 
 # TODO remove hardcoded variables
 address = 'localhost'
 port = 80
 path = "path1"
 
-action = 0
-while action != 'stop':
-    action = input("Input the following commands:: \n"
-                   "Stop - Stop the client \n"
-                   "Read(<path of a file>) - Read a file")
-
 client = Client(address, port)
 print('Connection to naming server is established')
 client.connect_to_storage_servers()
 
-result = client.read(path)
-print(result)
+action = 0
+while action != 'stop':
+    action = input("Input the following commands:: \n"
+                   "Stop - Stop the client \n"
+                   "Read(<path of a file>) - Read a file \n"
+                   "Write(<path of a file>) - Write a file \n"
+                   "Create(<path of a file\directory>) - Create a file or a directory \n"
+                   "Delete(<path of a file\directory>) - Delete a file or a directory \n"
+                   "Size(<path of a file\directory>) - Size a file or files in a directory \n")
+    client.handleUserInput(action)
