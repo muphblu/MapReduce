@@ -27,7 +27,6 @@ class Client:
             storage_tuple = (serverId, storage_proxy)
             self.connected_storages.append(storage_tuple)
 
-    # Client
     def read(self, path):
         """
         Read file from storage servers through path received by Naming Server
@@ -45,7 +44,6 @@ class Client:
             file_content = self.error_no_path
         return file_content
 
-    # Client
     def write(self, path, content):
         """
         Write file to storage servers through path received by Naming Server
@@ -60,11 +58,11 @@ class Client:
                 chunk_id = storage_list[index][1]
                 # self.storage_coordinates[index][1] is a chunk's id for index-th storage
                 self.connected_storages[server_id].write(chunk_id, content)
+                print(content + ' is written to storages')
         else:
             # If there are no available storage then output ERROR
             print(self.error_no_available_storage)
 
-    # Client
     def delete_file(self, path):
         """
         Delete a file in storage servers through Naming Server path
@@ -73,7 +71,6 @@ class Client:
         """
         self.naming_server.delete(path)
 
-    # Client
     def create_directory(self, path):
         """
         Create a directory in storage servers through Naming Server path
@@ -82,7 +79,6 @@ class Client:
         """
         self.naming_server.mkdir(path)
 
-    # Client
     def delete_directory(self, path):
         """
         Delete a file in storage servers through Naming Server path
@@ -91,7 +87,6 @@ class Client:
         """
         self.naming_server.rmdir(path)
 
-    # Client
     def size_query(self, path):
         """
         Size a query
@@ -110,7 +105,7 @@ class Client:
 
     def get_chunk_counts(self, content):
         """
-        Returns the number of chunks to write
+        Return the number of chunks to write
         :param content: content of a file to write
         :return: The number of chunks
         """
@@ -119,7 +114,7 @@ class Client:
         chunk_counts = 0
         index = 0
         while index < len(words):
-            while one_chunk_content <= self.ONE_CHUNK_CHARS_COUNT:
+            while (one_chunk_content + words[index]) <= self.ONE_CHUNK_CHARS_COUNT:
                 one_chunk_content += words[index]
                 index += 1
             chunk_counts += 1
