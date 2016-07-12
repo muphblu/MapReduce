@@ -10,19 +10,17 @@ class Client:
 
     def __init__(self, ip, port):
         # TODO: Replication of files in write - Naming server is responsible for replication
-        # TODO: Delete a file
         # TODO: Size for a file and a directory. Like ls command
         self.naming_server = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
         self.connected_storages = []
         self.storage_coordinates = []
         self.chunk_ids = []
 
-
     # Naming server
     def connect_to_storage_servers_for_read(self, path):
         """
         Add proxies for all storages by coordinates received from naming server with reading purpose
-        :return:
+        :return: True if there are any connected storage, False - otherwise
         """
         self.connected_storages = []
         self.storage_coordinates = []
@@ -48,7 +46,7 @@ class Client:
     def connect_to_storage_servers_for_write(self, path, content):
         """
         Add proxies for all storages by coordinates received from naming server with writing purpose
-        :return:
+        :return: True if there are any connected storage, False - otherwise
         """
         self.connected_storages = []
         self.storage_coordinates = []
@@ -57,8 +55,8 @@ class Client:
         """Python's default encoding is the 'ascii' encoding
         In ASCII, each character is represented by one byte
         Therefore, one chunk is 1024 characters"""
-        #TODO one word not on different chunks
-        count_chunks = len(content) / self.ONE_CHUNK_CHARS_COUNT + 1
+        # TODO one word not on different chunks
+        count_chunks = self.get_chunk_counts(content)
 
         storage_list = self.naming_server.write(path, count_chunks)
         for storage in storage_list:
@@ -67,7 +65,6 @@ class Client:
             ip = coordinates[0]
             port = coordinates[1]
             storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-            # TODO consider fixing possible lost connection for storage variable
             self.connected_storages.append(storage_proxy)
             self.storage_coordinates.append(coordinates)
             # storage[1] is a chunk id
@@ -153,6 +150,23 @@ class Client:
         :return:
         """
         pass
+
+    def get_chunk_counts(self, content):
+        """
+        Returns the number of chunks to write
+        :param content: content of a file to write
+        :return: The number of chunks
+        """
+        words = content.split()
+        one_chunk_content = ''
+        chunk_counts = 0
+        index = 0
+        while index < len(words):
+            while one_chunk_content <= self.ONE_CHUNK_CHARS_COUNT:
+                one_chunk_content += words[index]
+                index += 1
+            chunk_counts += 1
+        return chunk_counts
 
     def handle_user_input(self, user_input):
         """
