@@ -100,6 +100,14 @@ class Client:
         """
         return self.naming_server(self, path)
 
+    def list_directories(self, path):
+        """
+        Raise not a directory exception
+        :param path: path to directory to list
+        :return: return list of directories
+        """
+        pass
+
     def get_chunk_counts(self, content):
         """
         Returns the number of chunks to write
