@@ -18,6 +18,8 @@ class Client:
         self.storage_coordinates = []
         self.chunk_ids = []
 
+
+    # Naming server
     def connect_to_storage_servers_for_read(self, path):
         """
         Add proxies for all storages by coordinates received from naming server with reading purpose
@@ -44,6 +46,7 @@ class Client:
         else:
             return False
 
+    # Naming server
     def connect_to_storage_servers_for_write(self, path, content):
         """
         Add proxies for all storages by coordinates received from naming server with writing purpose
@@ -76,6 +79,7 @@ class Client:
         else:
             return False
 
+    # Client
     def read(self, path):
         """
         Read file from storage servers through path received by Naming Server
@@ -93,6 +97,7 @@ class Client:
             file_content = self.error_no_path
         return file_content
 
+    # Client
     def write(self, path, content):
         """
         Write file to storage servers through path received by Naming Server
@@ -108,6 +113,7 @@ class Client:
             # If there are no available storage then output ERROR
             print(self.error_no_available_storage)
 
+    # Client
     def create_file(self, path, file_name):
         """
         Create a file in storage servers through Naming Server path
@@ -117,6 +123,7 @@ class Client:
         """
         pass
 
+    # Client
     def delete_file(self, path, file_name):
         """
         Delete a file in storage servers through Naming Server path
@@ -131,6 +138,7 @@ class Client:
             self.connected_storages[index].delete(chunk_id)"""
         pass
 
+    # Client
     def create_directory(self, path):
         """
         Create a directory in storage servers through Naming Server path
@@ -139,6 +147,7 @@ class Client:
         """
         self.naming_server.mkdir(path)
 
+    # Client
     def delete_directory(self, path):
         """
         Delete a file in storage servers through Naming Server path
@@ -147,6 +156,7 @@ class Client:
         """
         self.naming_server.rmdir(path)
 
+    # Client
     def size_query(self, path):
         """
         Size a query
