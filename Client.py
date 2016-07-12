@@ -1,5 +1,4 @@
 import xmlrpc.client
-import random
 
 
 class Client:
@@ -113,19 +112,13 @@ class Client:
             print(self.error_no_available_storage)
 
     # Client
-    def delete_file(self, path, file_name):
+    def delete_file(self, path):
         """
         Delete a file in storage servers through Naming Server path
         :param path: Path in FS from where to delete
-        :param file_name: name of a file in a path
         :return:
         """
-        """self.connect_to_storage_servers(path)
-        for index in range(len(self.connected_storages)):
-            # self.storage_coordinates[index][1] is a chunk's id for index-th storage
-            chunk_id = self.chunk_ids[index]
-            self.connected_storages[index].delete(chunk_id)"""
-        pass
+        self.naming_server.delete(path)
 
     # Client
     def create_directory(self, path):
@@ -152,7 +145,7 @@ class Client:
         :param path: Directory name in FS that is deleted
         :return:
         """
-        pass
+        return self.naming_server(self, path)
 
     def handle_user_input(self, user_input):
         """
