@@ -22,6 +22,7 @@ class NamingServer:
         """
         reply = []
         stub_tuple = (1, "some_chunk_id")
+        # TODO: use reply.append(stub_tuple) cause this one doesn't work
         reply[1] = stub_tuple
         return reply
 
@@ -33,6 +34,7 @@ class NamingServer:
         """
         reply = []
         stub_tuple = (1, "some_chunk_id")
+        # TODO: use reply.append(stub_tuple) cause this one doesn't work
         reply[1] = stub_tuple
         return reply
 
