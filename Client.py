@@ -77,7 +77,7 @@ class Client:
     def create_directory(self, path):
         """
         Create a directory in storage servers through Naming Server path
-        :param path: New directory name in FS
+        :param path: New directory path in FS
         :return:
         """
         self.naming_server.mkdir(path)
@@ -86,7 +86,7 @@ class Client:
     def delete_directory(self, path):
         """
         Delete a file in storage servers through Naming Server path
-        :param path: Directory name in FS that is deleted
+        :param path: Directory path in FS that is deleted
         :return:
         """
         self.naming_server.rmdir(path)
@@ -95,7 +95,7 @@ class Client:
     def size_query(self, path):
         """
         Size a query
-        :param path: Directory name in FS that is deleted
+        :param path: Directory path in FS that is deleted
         :return:
         """
         return self.naming_server(self, path)

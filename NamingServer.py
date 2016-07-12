@@ -57,7 +57,7 @@ class NamingServer:
         reply[1] = stub_tuple
         return reply
 
-    def write(self, count_chunks):
+    def write(self, path, size, count_chunks):
         """
         Write file to FS
         :param count_chunks: Number of chunks to write
@@ -93,7 +93,7 @@ class NamingServer:
         try:
             os.makedirs(dir_path)
         except FileExistsError:
-            print('given name already exists')
+            print('given path already exists')
             # return some error somewhere
 
     def rmdir(self, path):
@@ -130,6 +130,7 @@ class NamingServer:
         # self.rmdir('/r')
         # self.list('/``')
         # self.get_type('/r/file')
+        pass
 
 if __name__ == '__main__':
     server = NamingServer()
