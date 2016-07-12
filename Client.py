@@ -12,67 +12,20 @@ class Client:
         # TODO: Size for a file and a directory. Like ls command
         self.naming_server = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
         self.connected_storages = []
-        self.storage_coordinates = []
-        self.chunk_ids = []
+        self.storage_coordinates = self.naming_server.get_storages_info()
 
-    # Naming server
-    def connect_to_storage_servers_for_read(self, path):
-        """
-        Add proxies for all storages by coordinates received from naming server with reading purpose
-        :return: True if there are any connected storage, False - otherwise
-        """
-        self.connected_storages = []
-        self.storage_coordinates = []
-        self.chunk_ids = []
-        storage_list = self.naming_server.read(path)
-        for storage in storage_list:
-            # storage[0] is a string - ip:port
-            coordinates = storage[0].split(":")
+        # Connecting to storages
+        for storage in self.storage_coordinates:
+            serverId = storage[0]
+            # storage[1] is string 'ip:port'
+            coordinates = storage[1].split(":")
             ip = coordinates[0]
             port = coordinates[1]
             storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-            self.connected_storages.append(storage_proxy)
-            self.storage_coordinates.append(coordinates)
-            # storage[1] is a chunk id
-            self.chunk_ids.append(storage[1])
             print('Storage with ip = ' + ip + ' is connected')
-        if len(storage_list) > 0:
-            return True
-        else:
-            return False
 
-    # Naming server
-    def connect_to_storage_servers_for_write(self, path, content):
-        """
-        Add proxies for all storages by coordinates received from naming server with writing purpose
-        :return: True if there are any connected storage, False - otherwise
-        """
-        self.connected_storages = []
-        self.storage_coordinates = []
-        self.chunk_ids = []
-
-        """Python's default encoding is the 'ascii' encoding
-        In ASCII, each character is represented by one byte
-        Therefore, one chunk is 1024 characters"""
-        # TODO one word not on different chunks
-        count_chunks = self.get_chunk_counts(content)
-
-        storage_list = self.naming_server.write(path, count_chunks)
-        for storage in storage_list:
-            # storage[0] is a string - ip:port
-            coordinates = storage[0].split(":")
-            ip = coordinates[0]
-            port = coordinates[1]
-            storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-            self.connected_storages.append(storage_proxy)
-            self.storage_coordinates.append(coordinates)
-            # storage[1] is a chunk id
-            self.chunk_ids.append(storage[1])
-            print('Storage with ip = ' + ip + ' is connected')
-        if len(storage_list) > 0:
-            return True
-        else:
-            return False
+            storage_tuple = (serverId, storage_proxy)
+            self.connected_storages.append(storage_tuple)
 
     # Client
     def read(self, path):
@@ -80,13 +33,13 @@ class Client:
         Read file from storage servers through path received by Naming Server
         :param path: Path in FS from where to read
         """
-        file_content = ''
-        # Establish connection to all storage servers, which contain file with path
-        if self.connect_to_storage_servers_for_read(path):
-            for index in range(len(self.connected_storages)):
-                # self.storage_coordinates[index][1] is a chunk's id for index-th storage
-                chunk_id = self.chunk_ids[index]
-                file_content += self.connected_storages[index].read(chunk_id)
+        storage_list = self.naming_server.read(path)
+        if len(storage_list) > 0:
+            file_content = ''
+            for index in range(len(storage_list)):
+                server_id = storage_list[index][0]
+                chunk_id = storage_list[index][1]
+                file_content += self.connected_storages[server_id].read(chunk_id)
         else:
             # If there are no such path in storages then output error
             file_content = self.error_no_path
@@ -98,12 +51,15 @@ class Client:
         Write file to storage servers through path received by Naming Server
         :param path: Path in FS from where to write
         """
-        # Establish connection to all storage servers, which contain file with path
-        if self.connect_to_storage_servers_for_write(path, content):
-            for index in range(len(self.connected_storages)):
-                chunk_id = self.chunk_ids[index]
+        chunk_counts = self.get_chunk_counts(content)
+        storage_list = self.naming_server.write(chunk_counts)
+
+        if len(storage_list) > 0:
+            for index in range(len(storage_list)):
+                server_id = storage_list[index][0]
+                chunk_id = storage_list[index][1]
                 # self.storage_coordinates[index][1] is a chunk's id for index-th storage
-                self.connected_storages[index].write(chunk_id, content)
+                self.connected_storages[server_id].write(chunk_id, content)
         else:
             # If there are no available storage then output ERROR
             print(self.error_no_available_storage)
@@ -196,7 +152,7 @@ client = Client(address, port)
 print('Connection to naming server is established')
 
 action = 0
-while action != 'stop':
+while action.lower() != 'stop':
     action = input("Input one of the following commands:: \n"
                    "Stop - Stop the client \n"
                    "Read(<path of a file>) - Read a file \n"
