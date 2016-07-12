@@ -3,6 +3,7 @@
 import os
 import xmlrpc
 from xmlrpc.server import SimpleXMLRPCServer
+from utils import DirFileEnum
 
 
 def get_own_address():
@@ -120,13 +121,14 @@ class NamingServer:
     def get_type(self, path):
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
-            print('It is file')
-            # return something
+            #print('It is file')
+            return DirFileEnum.File
         elif os.path.isdir(total_path):
-            print('It is directory')
-            # return something else
+            #print('It is directory')
+            return DirFileEnum.Directory
         else:
-            print('Neither file nor directory')
+            #print('Neither file nor directory')
+            return DirFileEnum.Error
 
     def get_storages_info(self):
         """
@@ -142,6 +144,7 @@ class NamingServer:
         # self.get_type('/r/file')
         # self.delete('/r/file')
         pass
+
 
 if __name__ == '__main__':
     server = NamingServer()
