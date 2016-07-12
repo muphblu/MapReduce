@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import uuid
 import xmlrpc
 from xmlrpc.server import SimpleXMLRPCServer
+
+from utils import FileInfo
 from utils import DirFileEnum
 
 
@@ -64,11 +67,17 @@ class NamingServer:
         :param count_chunks: Number of chunks to write
         :return: ordered list of tuples (??)
         """
-        reply = []
-        stub_tuple = (1, "some_chunk_id")
-        # TODO: use reply.append(stub_tuple) cause this one doesn't work
-        reply[1] = stub_tuple
-        return reply
+        name = str(uuid.uuid4())
+        server_ids = [self.get_server_ids_for_chunk(chunk_number) for chunk_number in range(0, count_chunks)]
+        chunks_info = [(server_id, name) for server_id in server_ids]
+        FileInfo(path, size, chunks_info).save_file()
+        return chunks_info
+        # reply = []
+        # stub_tuple = (1, "some_chunk_id")
+        # # TODO: use reply.append(stub_tuple) cause this one doesn't work
+        # reply[1] = stub_tuple
+        # return reply
+        pass
 
     def delete(self, path):
         total_path = self.repository_root + path
@@ -136,6 +145,13 @@ class NamingServer:
         :return: dictionary where key is server id value is server address as a string "127.0.0.1:8000"
         """
         return get_servers_addresses()
+
+    def get_server_ids_for_chunk(self, chunk_number):
+        server_ids = list(self.storages.keys())
+        servers_number = len(server_ids)
+        main_index = chunk_number % servers_number
+        replication_index = (chunk_number + 1) % servers_number
+        return [server_ids[main_index], server_ids[replication_index]]
 
     def main(self, argv):
         # self.mkdir('/r')
