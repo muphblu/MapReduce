@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+import os
 import xmlrpc
 from xmlrpc.server import SimpleXMLRPCServer
 
@@ -21,12 +24,13 @@ def create_proxy(address_str):
 
 
 class NamingServer:
-    def __init__(self, port):
+    def __init__(self):
+        self.repository_root = '/filesystem/'
 
         # Naming server configuration
         address_str = get_own_address()
         address = address_str.split(":")
-        self.server = SimpleXMLRPCServer((address[0], address[1]))
+        self.server = SimpleXMLRPCServer((address[0], int(address[1])))
         # registering functions
         self.server.register_function(self.read)
         self.server.register_function(self.write)
@@ -72,20 +76,62 @@ class NamingServer:
         pass
 
     def list(self, path):
-        pass
+        dir_path = self.repository_root + path
+        try:
+            os.listdir(dir_path)
+        except FileNotFoundError:
+            print('Given path not found')
+            # return some error
+        except NotADirectoryError:
+            print('given path is not a directory')
+            # return some error
 
     def mkdir(self, path):
-        pass
+        # check here the correctness of the path
+        dir_path = self.repository_root + path
+        print(dir_path)  # debug print
+        try:
+            os.makedirs(dir_path)
+        except FileExistsError:
+            print('given name already exists')
+            # return some error somewhere
 
     def rmdir(self, path):
-        pass
+        dir_path = self.repository_root + path
+        try:
+            os.rmdir(dir_path)
+        except NotADirectoryError:
+            print('given path is not a directory')
+            # return some error
+        except OSError:
+            print('directory is not empty')
+            # return some error
 
     def get_type(self, path):
-        pass
+        total_path = self.repository_root + path
+        if os.path.isfile(total_path):
+            print('It is file')
+            # return something
+        elif os.path.isdir(total_path):
+            print('It is directory')
+            # return something else
+        else:
+            print('Neither file nor directory')
 
     def get_storages_info(self):
         """
         Provides list of storage servers addresses for the client
         :return: dictionary where key is server id value is server address as a string "127.0.0.1:8000"
         """
-        return self.storages_addresses
+        return get_servers_addresses()
+
+    def main(self, argv):
+        # self.mkdir('/r')
+        # self.rmdir('/r')
+        # self.list('/``')
+        # self.get_type('/r/file')
+
+if __name__ == '__main__':
+    server = NamingServer()
+    # testing here
+    server.main('a')  # passing parameter that is not needed for now
