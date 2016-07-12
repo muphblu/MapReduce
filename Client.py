@@ -9,8 +9,7 @@ class Client:
     ONE_CHUNK_CHARS_COUNT = 1024
 
     def __init__(self, ip, port):
-        # TODO: Replication of files in write
-        # TODO: Create a file. Is it the same as write?
+        # TODO: Replication of files in write - Naming server is responsible for replication
         # TODO: Delete a file
         # TODO: Size for a file and a directory. Like ls command
         self.naming_server = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
@@ -33,7 +32,6 @@ class Client:
             ip = coordinates[0]
             port = coordinates[1]
             storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-            # TODO consider fixing possible lost connection for storage variable
             self.connected_storages.append(storage_proxy)
             self.storage_coordinates.append(coordinates)
             # storage[1] is a chunk id
@@ -56,6 +54,7 @@ class Client:
         """Python's default encoding is the 'ascii' encoding
         In ASCII, each character is represented by one byte
         Therefore, one chunk is 1024 characters"""
+        #TODO one word not on different chunks
         count_chunks = len(content) / self.ONE_CHUNK_CHARS_COUNT + 1
 
         storage_list = self.naming_server.write(path, count_chunks)
@@ -101,21 +100,12 @@ class Client:
         # Establish connection to all storage servers, which contain file with path
         if self.connect_to_storage_servers_for_write(path, content):
             for index in range(len(self.connected_storages)):
-                chunk_id = random.randrange(1, 30000, 1)
+                chunk_id = self.chunk_ids[index]
                 # self.storage_coordinates[index][1] is a chunk's id for index-th storage
                 self.connected_storages[index].write(chunk_id, content)
         else:
             # If there are no available storage then output ERROR
             print(self.error_no_available_storage)
-
-    def create_file(self, path, file_name):
-        """
-        Create a file in storage servers through Naming Server path
-        :param path: Path in FS where to create
-        :param file_name: name of a file in a path
-        :return:
-        """
-        pass
 
     def delete_file(self, path, file_name):
         """
@@ -194,8 +184,7 @@ while action != 'stop':
     action = input("Input one of the following commands:: \n"
                    "Stop - Stop the client \n"
                    "Read(<path of a file>) - Read a file \n"
-                   "Write(<path of a file>) - Write a file \n"
-                   "Create(<path of a file>) - Create a file \n"
+                   "Write(<path of a file>) - Write\create a file \n"
                    "Delete(<path of a file>) - Delete a file \n"
                    "Mkdir(<path of a directory>) - Create a directory \n"
                    "Rmdir(<path of a directory>) - Delete a file or a directory \n"
