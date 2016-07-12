@@ -70,7 +70,17 @@ class NamingServer:
         return reply
 
     def delete(self, path):
-        pass
+        total_path = self.repository_root + path
+        if os.path.isfile(total_path):
+            os.remove(total_path)
+            print('It is file')
+            # return something
+        elif os.path.isdir(total_path):
+            os.remove(total_path)
+            print('Removing directory')
+            # return something else
+        else:
+            print('Neither file nor directory. Or does not exist')
 
     def size(self, path):
         pass
@@ -130,6 +140,7 @@ class NamingServer:
         # self.rmdir('/r')
         # self.list('/``')
         # self.get_type('/r/file')
+        # self.delete('/r/file')
         pass
 
 if __name__ == '__main__':
