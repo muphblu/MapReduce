@@ -24,11 +24,11 @@ started on ports `8000 - (8000+n)` where `n` number of servers
 
 ### NamingServer
 started on `8000` port
-- `listTuples read(path) // returns ordered list of tuples where key is serverId and value is chunkId`
-- `listTuples write(path, countChunks) // returns ordered list with tuples where key is serverId and value is tuple (chunkNumber, chunksIds)`
-- `status delete(path) // Name server tells storages to delete particular chunks`
+- `listTuples read(path)` // returns ordered list of tuples where key is serverId and value is chunkId
+- `listTuples write(path, countChunks)` // returns ordered list with tuples where key is serverId and value is chunksIds
+- `status delete(path)` // Name server tells storages to delete particular chunks
 - `size: ??`
-- `list[] list(path) // list of files/directories`
+- `list[] list(path)` // list of files/directories
 - `status mkdir(path)`
 - `status rmdir(path)`
 - `type get_type(path)`
