@@ -68,11 +68,11 @@ class NamingServer:
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
             os.remove(total_path)
-            print('It is file')
+            print('Removed file')
             # return something
         elif os.path.isdir(total_path):
-            os.remove(total_path)
-            print('Removing directory')
+            os.rmdir(total_path)
+            print('Removed directory')
             # return something else
         else:
             print('Neither file nor directory. Or does not exist')
