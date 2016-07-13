@@ -118,11 +118,14 @@ class Client:
         :param path: path to directory to list
         :return: return list of directories
         """
-        dirs = self.naming_server.list(self, path)
+        result = self.naming_server.list(self, path)
         # This would print all the files and directories with sizes
-        for file in dirs:
-            size = self.naming_server.size(self, path + file)
-            print(file + '   ||   ' + size)
+        if isinstance(result, str):
+            print(result)
+        else:
+            for file in result:
+                size = self.naming_server.size(self, path + file)
+                print(file + '   ||   ' + size)
 
     # ===============================
     # Helpers
