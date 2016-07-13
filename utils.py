@@ -23,7 +23,7 @@ class FileInfo(object):
             pickle.dump(self, file)
 
     @staticmethod
-    def get_file(path):
+    def get_file_info(path):
         with open(path, mode='rb') as file:
             return pickle.load(file)
 

@@ -69,8 +69,6 @@ class NamingServer:
 
         return chunk_info_list
 
-
-
     def delete(self, path):
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
@@ -85,7 +83,8 @@ class NamingServer:
             print('Neither file nor directory. Or does not exist')
 
     def size(self, path):
-        pass
+        file_info = FileInfo.get_file_info(path)
+        return file_info.size
 
     def list(self, path):
         dir_path = self.repository_root + path
