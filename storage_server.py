@@ -19,6 +19,7 @@ class StorageServer:
         self.server.register_function(self.write, "write")
         self.server.register_function(self.delete, "delete")
         self.server.register_function(self.replicate, "replicate")
+        self.server.register_function(self.ping, "ping")
         self.server.serve_forever()
 
     def read(self, chunk_name):
@@ -63,6 +64,9 @@ class StorageServer:
         """
         server = list(filter(lambda x: x.id == server_id, self.other_servers))[0]
         server.proxy.write(chunk_name, self.read(chunk_name))
+
+    def ping(self):
+        return True
 
     # ===============================
     # Helpers
