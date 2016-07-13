@@ -42,11 +42,8 @@ class NamingServer:
         :param path: Path in FS from where to read
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
-        reply = []
-        stub_tuple = (1, "some_chunk_id")
-        # TODO: use reply.append(stub_tuple) cause this one doesn't work
-        reply[1] = stub_tuple
-        return reply
+        total_path = self.repository_root + path
+        return FileInfo.get_file_info(total_path).chunks
 
     def write(self, path, size, count_chunks):
         """
@@ -72,8 +69,11 @@ class NamingServer:
             file_info = FileInfo.get_file_info(total_path)
             for chunk in file_info.chunks:
                 # TODO maybe add 'try' here to delete info from NS even if SSs are down
-                self.storage_servers[chunk.main_server_id].proxy.delete(chunk.chunk_name)
-                self.storage_servers[chunk.replica_server_id].proxy.delete(chunk.chunk_name)
+                for server in list(filter(
+                        lambda serv: serv.id == chunk.main_server_id or serv.id == chunk.replica_server_id,
+                        self.storage_servers)):
+                    server.proxy.delete(chunk.chunk_name)
+
             self.delete_server_file_info(path)
             os.remove(total_path)
             print('Removed file')
