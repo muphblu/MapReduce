@@ -42,11 +42,8 @@ class NamingServer:
         :param path: Path in FS from where to read
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
-        reply = []
-        stub_tuple = (1, "some_chunk_id")
-        # TODO: use reply.append(stub_tuple) cause this one doesn't work
-        reply[1] = stub_tuple
-        return reply
+        total_path = self.repository_root + path
+        return FileInfo.get_file_info(total_path).chunks
 
     def write(self, path, size, count_chunks):
         """
@@ -56,23 +53,34 @@ class NamingServer:
         :param count_chunks: Number of chunks to write
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
+        total_path = self.repository_root + path
         chunk_info_list = [self.generate_chunk_info(chunk_number) for chunk_number in
                            range(0, count_chunks)]
 
-        FileInfo(path, size, chunk_info_list).save_file()
+        FileInfo(total_path, size, chunk_info_list).save_file()
         self.add_server_file_info(chunk_info_list, path)
 
         return list(map(lambda x: x._asdict(),chunk_info_list))
 
     def delete(self, path):
+        # TODO think whether we should return something or client should handle exceptions thrown here
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
+            file_info = FileInfo.get_file_info(total_path)
+            for chunk in file_info.chunks:
+                # TODO maybe add 'try' here to delete info from NS even if SSs are down
+                for server in list(filter(
+                        lambda serv: serv.id == chunk.main_server_id or serv.id == chunk.replica_server_id,
+                        self.storage_servers)):
+                    server.proxy.delete(chunk.chunk_name)
+
+            self.delete_server_file_info(path)
             os.remove(total_path)
-            print('It is file')
+            print('Removed file')
             # return something
         elif os.path.isdir(total_path):
-            os.remove(total_path)
-            print('Removing directory')
+            os.rmdir(total_path)
+            print('Removed directory')
             # return something else
         else:
             print('Neither file nor directory. Or does not exist')
@@ -83,8 +91,8 @@ class NamingServer:
         :param path: path to file
         :return: size
         """
-        # TODO add self.repository_root to path
-        file_info = FileInfo.get_file_info(path)
+        total_path = self.repository_root + path
+        file_info = FileInfo.get_file_info(total_path)
         return file_info.size
 
     def list(self, path):
@@ -189,6 +197,15 @@ class NamingServer:
                     self.storage_servers)):
                 server.files.add(path)
 
+    def delete_server_file_info(self, path):
+        """
+        Deletes info about file from self.storage_servers
+        :param path:
+        :return:
+        """
+        for server in self.storage_servers:
+            server.files.remove(path)
+
     def main(self, argv):
         # self.mkdir('/r')
         # self.rmdir('/r')
@@ -200,6 +217,7 @@ class NamingServer:
 
 s = NamingServer()
 s.write("lol.txt", 1024, 2)
+# s.delete("lol.txt")
 
 # if __name__ == '__main__':
 #     server = NamingServer()
