@@ -2,8 +2,7 @@
 
 import os
 import uuid
-import time
-from threading import Thread, Lock
+from threading import Thread
 
 import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
@@ -24,10 +23,6 @@ class NamingServer:
 
         self.server = SimpleXMLRPCServer((address[0], int(address[1])),
                                          allow_none=True)
-        self.watchdogs = {}
-        for server in utils.get_servers_info():
-            self.watchdogs[server[0]] = False
-        self.watchdog_lock = Lock()
 
         self.server = SimpleXMLRPCServer((address[0], int(address[1])))
         # registering functions
@@ -244,29 +239,13 @@ class NamingServer:
     # ===============================
     # Replication
     # ===============================
-    def heartbeat(self, server_id):
-        self.watchdogs[server_id] = False
 
     def heartbeat_loop(self):
         while True:
             print('started new watchdog loop')
-            # set all watchdogs to true
-            self.watchdog_lock.acquire()
-            for key, status in self.watchdogs.items():
-                self.watchdogs[key] = True
-            self.watchdog_lock.release()
-            # wait for some time
-            time.sleep(3)
-            # check if watchdogs were reset
-            for key, status in self.watchdogs.items():
-                self.watchdog_lock.acquire()
-                if self.watchdogs[key]:
-                    self.watchdog_lock.release()
-                    self.replicate_from_server(key)
-                try:
-                    self.watchdog_lock.release()
-                except RuntimeError:
-                    pass
+            for server in self.storage_servers:
+                if not server.proxy.ping():
+                    self.replicate_from_server(server.id)
 
     def replicate_from_server(self, server_id):
         print('replicating ', server_id)
