@@ -2,6 +2,9 @@
 
 import os
 import uuid
+import time
+from threading import Thread, Lock
+
 import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
 from xmlrpc.server import SimpleXMLRPCServer
@@ -21,6 +24,12 @@ class NamingServer:
 
         self.server = SimpleXMLRPCServer((address[0], int(address[1])),
                                          allow_none=True)
+        self.watchdogs = {}
+        for server in utils.get_servers_info():
+            self.watchdogs[server[0]] = False
+        self.watchdog_lock = Lock()
+
+        self.server = SimpleXMLRPCServer((address[0], int(address[1])))
         # registering functions
         self.server.register_function(self.read)
         self.server.register_function(self.write)
@@ -31,6 +40,9 @@ class NamingServer:
         self.server.register_function(self.rmdir)
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
+        self.server.register_function(self.heartbeat)
+
+        Thread(target=self.heartbeat_loop).start()
         # Starting RPC server(should be last)
         self.server.serve_forever()
 
@@ -59,11 +71,16 @@ class NamingServer:
                            range(0, count_chunks)]
 
         FileInfo(total_path, size, chunk_info_list).save_file()
-        self.add_server_file_info(chunk_info_list, path)
+        self.add_server_file_info(chunk_info_list, total_path)
 
         return self.serialize_chunk_info(chunk_info_list)
 
     def delete(self, path):
+        """
+        Deletes file
+        :param path: path to file to delete
+        :return: ?
+        """
         # TODO think whether we should return something or client should handle exceptions thrown here
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
@@ -218,6 +235,74 @@ class NamingServer:
         """
         for server in self.storage_servers:
             server.files.remove(path)
+
+    def get_storage_server_by_id(self, server_id):
+        for server in self.storage_servers:
+            if server.id == server_id:
+                return server
+
+    # ===============================
+    # Replication
+    # ===============================
+    def heartbeat(self, server_id):
+        self.watchdogs[server_id] = False
+
+    def heartbeat_loop(self):
+        while True:
+            print('started new watchdog loop')
+            # set all watchdogs to true
+            self.watchdog_lock.acquire()
+            for key, status in self.watchdogs.items():
+                self.watchdogs[key] = True
+            self.watchdog_lock.release()
+            # wait for some time
+            time.sleep(3)
+            # check if watchdogs were reset
+            for key, status in self.watchdogs.items():
+                self.watchdog_lock.acquire()
+                if self.watchdogs[key]:
+                    self.watchdog_lock.release()
+                    self.replicate_from_server(key)
+                try:
+                    self.watchdog_lock.release()
+                except RuntimeError:
+                    pass
+
+    def replicate_from_server(self, server_id):
+        print('replicating ', server_id)
+        # TODO use queue to put replication tasks and separate thread that will perform replication
+        server = self.get_storage_server_by_id(server_id)
+        for file in server.files:
+            for chunk in FileInfo.get_file_info(file).chunks:
+                print(chunk)
+                if chunk.main_server_id == server_id:
+                    new_server = (server_id + 1) % len(utils.get_servers_info())
+                    while True:
+                        new_server = (new_server + 1) % len(utils.get_servers_info())
+                        if new_server == chunk.replica_server_id:
+                            continue
+                        else:
+                            break
+                    try:
+                        print('new server ', new_server)
+                        self.get_storage_server_by_id(chunk.replica_server_id).proxy.replicate(
+                            chunk.chunk_name, new_server)
+                    except ConnectionError:
+                        pass
+                if chunk.replica_server_id == server_id:
+                    new_server = (server_id + 1) % len(utils.get_servers_info())
+                    while True:
+                        new_server = (new_server + 1) % len(utils.get_servers_info())
+                        if new_server == chunk.main_server_id:
+                            continue
+                        else:
+                            break
+                    try:
+                        print('new server ', new_server)
+                        self.get_storage_server_by_id(chunk.main_server_id).proxy.replicate(
+                            chunk.chunk_name, new_server)
+                    except ConnectionError:
+                        pass
 
     def main(self, argv):
         # self.mkdir('/r')
