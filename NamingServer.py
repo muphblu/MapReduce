@@ -244,7 +244,10 @@ class NamingServer:
         while True:
             print('started new watchdog loop')
             for server in self.storage_servers:
-                if not server.proxy.ping():
+                try:
+                    if not server.proxy.ping():
+                        self.replicate_from_server(server.id)
+                except ConnectionError:
                     self.replicate_from_server(server.id)
 
     def replicate_from_server(self, server_id):
