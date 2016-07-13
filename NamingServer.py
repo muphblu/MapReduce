@@ -10,7 +10,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 class NamingServer:
     def __init__(self):
         """NamingServer"""
-        self.repository_root = '/filesystem/'
+        self.repository_root = 'filesystem/'
 
         # Naming server configuration
         address_str = utils.get_own_address()
@@ -31,7 +31,7 @@ class NamingServer:
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
         # Starting RPC server(should be last)
-        # self.server.serve_forever()
+        self.server.serve_forever()
 
     # ===============================
     # NamingServer API
@@ -173,7 +173,7 @@ class NamingServer:
     # ===============================
 
     def serialize_chunk_info(self, chunk_info_list):
-        return list(map(lambda x: x._asdict(), chunk_info_list))
+        return list(map(lambda x: dict(x._asdict()), chunk_info_list))
 
     def generate_chunk_info(self, number_of_chunk):
         """
@@ -220,7 +220,7 @@ class NamingServer:
 
 
 s = NamingServer()
-s.write("lol.txt", 1024, 2)
+#s.write("lol.txt", 1024, 2)
 # s.delete("lol.txt")
 
 # if __name__ == '__main__':
