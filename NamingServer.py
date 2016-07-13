@@ -62,7 +62,7 @@ class NamingServer:
         FileInfo(path, size, chunk_info_list).save_file()
         self.add_server_file_info(chunk_info_list, path)
 
-        return chunk_info_list
+        return list(map(lambda x: x._asdict(),chunk_info_list))
 
     def delete(self, path):
         total_path = self.repository_root + path
