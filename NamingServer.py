@@ -19,7 +19,8 @@ class NamingServer:
         self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in
                                 utils.get_servers_info()]
 
-        self.server = SimpleXMLRPCServer((address[0], int(address[1])))
+        self.server = SimpleXMLRPCServer((address[0], int(address[1])),
+                                         allow_none=True)
         # registering functions
         self.server.register_function(self.read)
         self.server.register_function(self.write)
