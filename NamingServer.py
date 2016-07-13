@@ -2,29 +2,21 @@
 
 import os
 import uuid
-import xmlrpc
 from xmlrpc.server import SimpleXMLRPCServer
-
-from utils import FileInfo
-from utils import DirFileEnum
+from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
 
 
 def get_own_address():
     return "localhost:8000"
 
 
-def get_servers_addresses():
+def get_servers_info():
     return [
         (1, "localhost:8001"),
         (2, "localhost:8002"),
         (3, "localhost:8003"),
         (4, "localhost:8004")
     ]
-
-
-def create_proxy(address_str):
-    address = address_str.split(":")
-    return xmlrpc.client.ServerProxy('http://' + address[0] + ':' + address[1])
 
 
 class NamingServer:
@@ -47,7 +39,7 @@ class NamingServer:
         self.server.register_function(self.get_storages_info)
 
         # Connection to storage servers
-        self.storages = {server_info[0]: create_proxy(server_info[1]) for server_info in get_servers_addresses()}
+        self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in get_servers_info()]
 
     def read(self, path):
         """
@@ -63,21 +55,21 @@ class NamingServer:
 
     def write(self, path, size, count_chunks):
         """
-        Write file to FS
+        Write file to
+        :param path:
+        :param size:
         :param count_chunks: Number of chunks to write
-        :return: ordered list of tuples (??)
+        :return: ordered list of named tuples type of utils.ChunkInfo
         """
-        name = str(uuid.uuid4())
-        server_ids = [self.get_server_ids_for_chunk(chunk_number) for chunk_number in range(0, count_chunks)]
-        chunks_info = [(server_id, name) for server_id in server_ids]
-        FileInfo(path, size, chunks_info).save_file()
-        return chunks_info
-        # reply = []
-        # stub_tuple = (1, "some_chunk_id")
-        # # TODO: use reply.append(stub_tuple) cause this one doesn't work
-        # reply[1] = stub_tuple
-        # return reply
-        pass
+        chunk_info_list = [self.generate_chunk_info(chunk_number) for chunk_number in
+                           range(0, count_chunks)]
+
+        FileInfo(path, size, chunk_info_list).save_file()
+        self.add_server_file_info(chunk_info_list, path)
+
+        return chunk_info_list
+
+
 
     def delete(self, path):
         total_path = self.repository_root + path
@@ -130,13 +122,13 @@ class NamingServer:
     def get_type(self, path):
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
-            #print('It is file')
+            # print('It is file')
             return DirFileEnum.File
         elif os.path.isdir(total_path):
-            #print('It is directory')
+            # print('It is directory')
             return DirFileEnum.Directory
         else:
-            #print('Neither file nor directory')
+            # print('Neither file nor directory')
             return DirFileEnum.Error
 
     def get_storages_info(self):
@@ -144,14 +136,22 @@ class NamingServer:
         Provides list of storage servers addresses for the client
         :return: dictionary where key is server id value is server address as a string "127.0.0.1:8000"
         """
-        return get_servers_addresses()
+        return get_servers_info()
 
-    def get_server_ids_for_chunk(self, chunk_number):
-        server_ids = list(self.storages.keys())
+    def generate_chunk_info(self, number_of_chunk):
+        server_ids = list(map(lambda x: x.id, self.storage_servers))
         servers_number = len(server_ids)
-        main_index = chunk_number % servers_number
-        replication_index = (chunk_number + 1) % servers_number
-        return [server_ids[main_index], server_ids[replication_index]]
+        main_index = number_of_chunk % servers_number
+        replication_index = (number_of_chunk + 1) % servers_number
+        return ChunkInfo(number_of_chunk, str(uuid.uuid4()), server_ids[main_index], server_ids[replication_index])
+
+    def add_server_file_info(self, chunk_info_list, path):
+        for chunk_info in chunk_info_list:
+            for server in list(filter(
+                    lambda
+                            server: server.id == chunk_info.main_server_id or server.id == chunk_info.replica_server_id,
+                    self.storage_servers)):
+                server.files.add(path)
 
     def main(self, argv):
         # self.mkdir('/r')
@@ -162,7 +162,10 @@ class NamingServer:
         pass
 
 
-if __name__ == '__main__':
-    server = NamingServer()
-    # testing here
-    server.main('a')  # passing parameter that is not needed for now
+s = NamingServer()
+s.write("lol.txt", 1024, 2)
+
+# if __name__ == '__main__':
+#     server = NamingServer()
+#     # testing here
+#     server.main('a')  # passing parameter that is not needed for now
