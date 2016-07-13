@@ -10,22 +10,28 @@ class Client:
     def __init__(self, ip, port):
         # TODO: Replication of files in write - Naming server is responsible for replication
         # TODO: Size for a file and a directory. Like ls command
-        self.naming_server = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-        self.connected_storages = []
-        self.storage_coordinates = self.naming_server.get_storages_info()
 
-        # Connecting to storages
-        for storage in self.storage_coordinates:
-            serverId = storage[0]
-            # storage[1] is string 'ip:port'
-            coordinates = storage[1].split(":")
-            ip = coordinates[0]
-            port = coordinates[1]
-            storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-            print('Storage with ip = ' + ip + ' is connected')
+        try:
+            self.naming_server = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
+            self.connected_storages = []
+            self.storage_coordinates = self.naming_server.get_storages_info()
+            print('Connection to naming server is established')
 
-            storage_tuple = (serverId, storage_proxy)
-            self.connected_storages.append(storage_tuple)
+            # Connecting to storages
+            for storage in self.storage_coordinates:
+                server_id = storage[0]
+                # storage[1] is string 'ip:port'
+                coordinates = storage[1].split(":")
+                ip = coordinates[0]
+                port = coordinates[1]
+                storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
+                print('Storage with ip = ' + ip + ' is connected')
+
+                storage_tuple = (serverId, storage_proxy)
+                self.connected_storages.append(storage_tuple)
+        except WindowsError:
+            print('Unavailable naming server')
+            exit()
 
     def read(self, path):
         """
@@ -152,9 +158,8 @@ port = 80
 path = "path1"
 
 client = Client(address, port)
-print('Connection to naming server is established')
 
-action = 0
+action = ''
 while action.lower() != 'stop':
     action = input("Input one of the following commands:: \n"
                    "Stop - Stop the client \n"
