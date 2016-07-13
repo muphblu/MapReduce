@@ -35,7 +35,6 @@ class NamingServer:
         self.server.register_function(self.rmdir)
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
-        self.server.register_function(self.heartbeat)
 
         Thread(target=self.heartbeat_loop).start()
         # Starting RPC server(should be last)
