@@ -1,16 +1,19 @@
 import xmlrpc.client
+import utils
 
 
 class Client:
+    # ===============================
     # Error definitions
+    # ===============================
     ERROR_NO_AVAILABLE_STORAGE = 'ERROR. No available storage'
     ERROR_NO_PATH = 'ERROR. No storage with this path'
-    ONE_CHUNK_CHARS_COUNT = 1024
+    ONE_CHUNK_CHARS_COUNT = 4
 
+    # ===============================
+    # Client
+    # ===============================
     def __init__(self, ip, port):
-        # TODO: Replication of files in write - Naming server is responsible for replication
-        # TODO: Size for a file and a directory. Like ls command
-
         try:
             self.naming_server = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
             self.connected_storages = []
@@ -27,7 +30,7 @@ class Client:
                 storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
                 print('Storage with ip = ' + ip + ' is connected')
 
-                storage_tuple = (serverId, storage_proxy)
+                storage_tuple = (server_id, storage_proxy)
                 self.connected_storages.append(storage_tuple)
         except WindowsError:
             print('Unavailable naming server')
@@ -56,15 +59,20 @@ class Client:
         :param path: Path in FS from where to write
         """
         chunk_counts = self.get_chunk_counts(content)
-        storage_list = self.naming_server.write(chunk_counts)
+        size = self.naming_server.size(path)
+        storage_list = self.naming_server.write(path, size, chunk_counts)
 
+        # Sorting by chunk position
+        storage_list = sorted(storage_list, key=lambda storage: storage['chunk_position'])
         if len(storage_list) > 0:
             for index in range(len(storage_list)):
-                server_id = storage_list[index][0]
-                chunk_id = storage_list[index][1]
-                # self.storage_coordinates[index][1] is a chunk's id for index-th storage
-                self.connected_storages[server_id].write(chunk_id, content)
-                print(content + ' is written to storages')
+                storage = utils.get_chuck_info(storage_list[index])
+
+                main_server = self.connected_storages[storage.main_server_id][1]
+                main_server.write(storage.chunk_name, content)
+                replica_server = self.connected_storages[storage.replica_server_id][1]
+                replica_server.write(storage.chunk_name, content)
+                print(content + ' is written to storages and replicated')
         else:
             # If there are no available storage then output ERROR
             print(self.error_no_available_storage)
@@ -75,7 +83,8 @@ class Client:
         :param path: Path in FS from where to delete
         :return:
         """
-        self.naming_server.delete(path)
+        result = self.naming_server.delete(path)
+        print(result)
 
     def create_directory(self, path):
         """
@@ -83,15 +92,17 @@ class Client:
         :param path: New directory path in FS
         :return:
         """
-        self.naming_server.mkdir(path)
+        result = self.naming_server.mkdir(path)
+        print(result)
 
     def delete_directory(self, path):
         """
         Delete a file in storage servers through Naming Server path
         :param path: Directory path in FS that is deleted
-        :return:
+        :return: result string
         """
-        self.naming_server.rmdir(path)
+        result = self.naming_server.rmdir(path)
+        print(result)
 
     def size_query(self, path):
         """
@@ -103,12 +114,19 @@ class Client:
 
     def list_directories(self, path):
         """
-        Raise not a directory exception
+        Raise not a directory exception - Handled by Naming server
         :param path: path to directory to list
         :return: return list of directories
         """
-        pass
+        dirs = self.naming_server.list(self, path)
+        # This would print all the files and directories with sizes
+        for file in dirs:
+            size = self.naming_server.size(self, path + file)
+            print(file + '   ||   ' + size)
 
+    # ===============================
+    # Helpers
+    # ===============================
     def get_chunk_counts(self, content):
         """
         Return the number of chunks to write
@@ -119,11 +137,17 @@ class Client:
         one_chunk_content = ''
         chunk_counts = 0
         index = 0
-        while index < len(words):
-            while (one_chunk_content + words[index]) <= self.ONE_CHUNK_CHARS_COUNT:
-                one_chunk_content += words[index]
-                index += 1
-            chunk_counts += 1
+        while index <= len(words):
+            if index != len(words):
+                if len(one_chunk_content + words[index]) <= self.ONE_CHUNK_CHARS_COUNT:
+                    one_chunk_content += words[index]
+                    index += 1
+                else:
+                    one_chunk_content = ''
+                    chunk_counts += 1
+            else:
+                chunk_counts += 1
+                break
         return chunk_counts
 
     def handle_user_input(self, user_input):
@@ -139,22 +163,30 @@ class Client:
             print(result)
         elif 'write' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
-            content = user_input("Input the content:")
-            self.write(path[1], content)
+            content = input("Input the content:")
+            self.write(path, content)
         elif 'delete' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
-            self.delete_file(path[1])
+            self.delete_file(path)
         elif 'mkdir' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
-            self.create_directory(path[1])
+            self.create_directory(path)
+        elif 'size' in user_input.lower():
+            path = user_input.split('(', 3)[1][:-1]
+            size = self.size_query(path)
+            print('Size = ' + size)
+        elif 'list' in user_input.lower():
+            path = user_input.split('(', 3)[1][:-1]
+            print(' File name  ||  Size ')
+            self.list_directories(path)
         elif 'rmdir' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
-            self.delete_directory(path[1])
+            self.delete_directory(path)
 
 
 # TODO remove hardcoded variables
 address = 'localhost'
-port = 80
+port = 8000
 path = "path1"
 
 client = Client(address, port)
@@ -168,5 +200,6 @@ while action.lower() != 'stop':
                    "Delete(<path of a file>) - Delete a file \n"
                    "Mkdir(<path of a directory>) - Create a directory \n"
                    "Rmdir(<path of a directory>) - Delete a file or a directory \n"
+                   "List(<directory>) - List files in a directory with sizes \n"
                    "Size(<path of a file\directory>) - Size a file or files in a directory \n")
     client.handle_user_input(action)
