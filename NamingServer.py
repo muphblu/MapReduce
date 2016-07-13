@@ -77,14 +77,16 @@ class NamingServer:
 
             self.delete_server_file_info(path)
             os.remove(total_path)
-            print('Removed file')
-            # return something
+            result = 'Removed file'
+            print(result)
         elif os.path.isdir(total_path):
             os.rmdir(total_path)
-            print('Removed directory')
-            # return something else
+            result = 'Removed directory'
+            print(result)
         else:
-            print('Neither file nor directory. Or does not exist')
+            result = 'Neither file nor directory. Or does not exist'
+            print(result)
+        return result
 
     def size(self, path):
         """
@@ -104,46 +106,52 @@ class NamingServer:
         """
         dir_path = self.repository_root + path
         try:
-            os.listdir(dir_path)
+            return os.listdir(dir_path)
         except FileNotFoundError:
-            print('Given path not found')
-            # return some error
+            result = 'Given path not found'
+            print(result)
+            return result
         except NotADirectoryError:
-            print('given path is not a directory')
-            # return some error
+            result = 'given path is not a directory'
+            print(result)
+            return result
 
     def mkdir(self, path):
         # TODO: think about return type
         """
         Creates directory
         :param path: path to new directory
-        :return: ?
+        :return: result of operation
         """
         # check here the correctness of the path
         dir_path = self.repository_root + path
         print(dir_path)  # debug print
         try:
             os.makedirs(dir_path)
+            result = 'success'
         except FileExistsError:
-            print('given path already exists')
-            # return some error somewhere
+            result = 'given path is not a directory'
+            print(result)
+        return result
 
     def rmdir(self, path):
         # TODO: think about return type
         """
         Removes directory
         :param path: path to directory to remove
-        :return: ?
+        :return: result of operation
         """
         dir_path = self.repository_root + path
         try:
             os.rmdir(dir_path)
+            result = 'success'
         except NotADirectoryError:
-            print('given path is not a directory')
-            # return some error
+            result = 'given path is not a directory'
+            print(result)
         except OSError:
-            print('directory is not empty')
-            # return some error
+            result = 'directory is not empty'
+            print(result)
+        return result
 
     def get_type(self, path):
         """
@@ -221,7 +229,7 @@ class NamingServer:
 
 
 s = NamingServer()
-#s.write("lol.txt", 1024, 2)
+# s.write("lol.txt", 1024, 2)
 # s.delete("lol.txt")
 
 # if __name__ == '__main__':
