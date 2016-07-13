@@ -43,7 +43,7 @@ class NamingServer:
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
         total_path = self.repository_root + path
-        return FileInfo.get_file_info(total_path).chunks
+        return self.serialize_chunk_info(FileInfo.get_file_info(total_path).chunks)
 
     def write(self, path, size, count_chunks):
         """
@@ -60,7 +60,7 @@ class NamingServer:
         FileInfo(total_path, size, chunk_info_list).save_file()
         self.add_server_file_info(chunk_info_list, path)
 
-        return list(map(lambda x: x._asdict(),chunk_info_list))
+        return self.serialize_chunk_info(chunk_info_list)
 
     def delete(self, path):
         # TODO think whether we should return something or client should handle exceptions thrown here
@@ -171,6 +171,10 @@ class NamingServer:
     # ===============================
     # Helpers
     # ===============================
+
+    def serialize_chunk_info(self, chunk_info_list):
+        return list(map(lambda x: x._asdict(), chunk_info_list))
+
     def generate_chunk_info(self, number_of_chunk):
         """
         Generates ChunkInfo objects for currently available servers and amount of chunks
