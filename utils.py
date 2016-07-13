@@ -11,6 +11,9 @@ from enum import Enum
 ChunkInfo = namedtuple('ChunkInfo', ['chunk_position', 'chunk_name', 'main_server_id', 'replica_server_id'])
 
 
+def get_chuck_info(dict):
+    return namedtuple('ChunkInfo', dict.keys())(**dict)
+
 def get_own_address():
     return "localhost:8000"
 
