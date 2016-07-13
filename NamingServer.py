@@ -2,30 +2,23 @@
 
 import os
 import uuid
-from xmlrpc.server import SimpleXMLRPCServer
+import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
-
-
-def get_own_address():
-    return "localhost:8000"
-
-
-def get_servers_info():
-    return [
-        (1, "localhost:8001"),
-        (2, "localhost:8002"),
-        (3, "localhost:8003"),
-        (4, "localhost:8004")
-    ]
+from xmlrpc.server import SimpleXMLRPCServer
 
 
 class NamingServer:
     def __init__(self):
+        """NamingServer"""
         self.repository_root = '/filesystem/'
 
         # Naming server configuration
-        address_str = get_own_address()
+        address_str = utils.get_own_address()
         address = address_str.split(":")
+        # Connection to storage servers
+        self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in
+                                utils.get_servers_info()]
+
         self.server = SimpleXMLRPCServer((address[0], int(address[1])))
         # registering functions
         self.server.register_function(self.read)
@@ -37,15 +30,17 @@ class NamingServer:
         self.server.register_function(self.rmdir)
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
+        # Starting RPC server(should be last)
+        self.server.serve_forever()
 
-        # Connection to storage servers
-        self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in get_servers_info()]
-
+    # ===============================
+    # NamingServer API
+    # ===============================
     def read(self, path):
         """
-        Read file from FS
+        Read file from DFS
         :param path: Path in FS from where to read
-        :return: ordered list of tuples (server_id, chunk_id)
+        :return: ordered list of named tuples type of utils.ChunkInfo
         """
         reply = []
         stub_tuple = (1, "some_chunk_id")
@@ -55,9 +50,9 @@ class NamingServer:
 
     def write(self, path, size, count_chunks):
         """
-        Write file to
-        :param path:
-        :param size:
+        Writes file to DFS
+        :param path: path to file
+        :param size: file size in
         :param count_chunks: Number of chunks to write
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
@@ -83,10 +78,21 @@ class NamingServer:
             print('Neither file nor directory. Or does not exist')
 
     def size(self, path):
+        """
+        Provides size of file in DFS
+        :param path: path to file
+        :return: size
+        """
+        # TODO add self.repository_root to path
         file_info = FileInfo.get_file_info(path)
         return file_info.size
 
     def list(self, path):
+        """
+        Lists all files and directories in current directory
+        :param path: path to directory
+        :return: list of strings with names of files and directories in path
+        """
         dir_path = self.repository_root + path
         try:
             os.listdir(dir_path)
@@ -98,6 +104,12 @@ class NamingServer:
             # return some error
 
     def mkdir(self, path):
+        # TODO: think about return type
+        """
+        Creates directory
+        :param path: path to new directory
+        :return: ?
+        """
         # check here the correctness of the path
         dir_path = self.repository_root + path
         print(dir_path)  # debug print
@@ -108,6 +120,12 @@ class NamingServer:
             # return some error somewhere
 
     def rmdir(self, path):
+        # TODO: think about return type
+        """
+        Removes directory
+        :param path: path to directory to remove
+        :return: ?
+        """
         dir_path = self.repository_root + path
         try:
             os.rmdir(dir_path)
@@ -119,6 +137,11 @@ class NamingServer:
             # return some error
 
     def get_type(self, path):
+        """
+        Get type of object
+        :param path: path to object
+        :return: utils.DirFileEnum
+        """
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
             # print('It is file')
@@ -133,11 +156,19 @@ class NamingServer:
     def get_storages_info(self):
         """
         Provides list of storage servers addresses for the client
-        :return: dictionary where key is server id value is server address as a string "127.0.0.1:8000"
+        :return: list with tuples where first param is server id and second is server network address "127.0.0.1:8000"
         """
-        return get_servers_info()
+        return utils.get_servers_info()
 
+    # ===============================
+    # Helpers
+    # ===============================
     def generate_chunk_info(self, number_of_chunk):
+        """
+        Generates ChunkInfo objects for currently available servers and amount of chunks
+        :param number_of_chunk: amount of chunks
+        :return: list of utils.ChunkInfo objects
+        """
         server_ids = list(map(lambda x: x.id, self.storage_servers))
         servers_number = len(server_ids)
         main_index = number_of_chunk % servers_number
@@ -145,10 +176,15 @@ class NamingServer:
         return ChunkInfo(number_of_chunk, str(uuid.uuid4()), server_ids[main_index], server_ids[replication_index])
 
     def add_server_file_info(self, chunk_info_list, path):
+        """
+        Adds info to the servers from self.storage_servers, about added file
+        :param chunk_info_list: list of ChunkInfo objects for this file
+        :param path: path to file
+        :return: ?
+        """
         for chunk_info in chunk_info_list:
             for server in list(filter(
-                    lambda
-                            server: server.id == chunk_info.main_server_id or server.id == chunk_info.replica_server_id,
+                    lambda server: server.id == chunk_info.main_server_id or server.id == chunk_info.replica_server_id,
                     self.storage_servers)):
                 server.files.add(path)
 
