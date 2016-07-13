@@ -56,17 +56,25 @@ class NamingServer:
         :param count_chunks: Number of chunks to write
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
+        total_path = self.repository_root + path
         chunk_info_list = [self.generate_chunk_info(chunk_number) for chunk_number in
                            range(0, count_chunks)]
 
-        FileInfo(path, size, chunk_info_list).save_file()
+        FileInfo(total_path, size, chunk_info_list).save_file()
         self.add_server_file_info(chunk_info_list, path)
 
         return chunk_info_list
 
     def delete(self, path):
+        # TODO think whether we should return something or client should handle exceptions thrown here
         total_path = self.repository_root + path
         if os.path.isfile(total_path):
+            file_info = FileInfo.get_file_info(total_path)
+            for chunk in file_info.chunks:
+                # TODO maybe add 'try' here to delete info from NS even if SSs are down
+                self.storage_servers[chunk.main_server_id].proxy.delete(chunk.chunk_name)
+                self.storage_servers[chunk.replica_server_id].proxy.delete(chunk.chunk_name)
+            self.delete_server_file_info(path)
             os.remove(total_path)
             print('Removed file')
             # return something
@@ -83,8 +91,8 @@ class NamingServer:
         :param path: path to file
         :return: size
         """
-        # TODO add self.repository_root to path
-        file_info = FileInfo.get_file_info(path)
+        total_path = self.repository_root + path
+        file_info = FileInfo.get_file_info(total_path)
         return file_info.size
 
     def list(self, path):
@@ -189,6 +197,15 @@ class NamingServer:
                     self.storage_servers)):
                 server.files.add(path)
 
+    def delete_server_file_info(self, path):
+        """
+        Deletes info about file from self.storage_servers
+        :param path:
+        :return:
+        """
+        for server in self.storage_servers:
+            server.files.remove(path)
+
     def main(self, argv):
         # self.mkdir('/r')
         # self.rmdir('/r')
@@ -200,6 +217,7 @@ class NamingServer:
 
 s = NamingServer()
 s.write("lol.txt", 1024, 2)
+# s.delete("lol.txt")
 
 # if __name__ == '__main__':
 #     server = NamingServer()
