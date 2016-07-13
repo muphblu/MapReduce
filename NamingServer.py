@@ -31,7 +31,7 @@ class NamingServer:
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
         # Starting RPC server(should be last)
-        self.server.serve_forever()
+        # self.server.serve_forever()
 
     # ===============================
     # NamingServer API
@@ -176,6 +176,7 @@ class NamingServer:
         return ChunkInfo(number_of_chunk, str(uuid.uuid4()), server_ids[main_index], server_ids[replication_index])
 
     def add_server_file_info(self, chunk_info_list, path):
+        # TODO create similar method to delete file
         """
         Adds info to the servers from self.storage_servers, about added file
         :param chunk_info_list: list of ChunkInfo objects for this file
