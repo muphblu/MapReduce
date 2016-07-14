@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import shutil
 import uuid
 from threading import Thread
 
@@ -22,6 +23,11 @@ class NamingServer:
         # Connection to storage servers
         self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in
                                 utils.get_servers_info()]
+
+        # reset root filesystem directory
+        if os.path.isdir(self.repository_root):
+            shutil.rmtree(self.repository_root)
+        os.mkdir(self.repository_root)
 
         self.server = SimpleXMLRPCServer((address[0], int(address[1])), allow_none=True)
 

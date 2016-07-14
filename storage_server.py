@@ -1,4 +1,5 @@
 import os
+import shutil
 from xmlrpc.server import SimpleXMLRPCServer
 import utils
 
@@ -14,6 +15,12 @@ class StorageServer:
         self.root_directory = "storage" + str(self.id)
         self.other_servers = self.init_proxies(list(
             filter(lambda server: server[0] != self.id, utils.get_servers_info())))
+
+        # reset storage directory
+        storage_path = 'storage' + str(server_id)
+        if os.path.isdir(storage_path):
+            shutil.rmtree(storage_path)
+        os.mkdir(storage_path)
 
         self.server = SimpleXMLRPCServer(address)
         self.server.register_function(self.read, "read")
