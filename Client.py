@@ -8,7 +8,7 @@ class Client:
     # ===============================
     ERROR_NO_AVAILABLE_STORAGE = 'ERROR. No available storage'
     ERROR_NO_PATH = 'ERROR. No storage with this path'
-    ONE_CHUNK_CHARS_COUNT = 4
+    ONE_CHUNK_CHARS_COUNT = 1024
 
     # ===============================
     # Client
@@ -110,7 +110,7 @@ class Client:
         :param path: Directory path in FS that is deleted
         :return:
         """
-        return self.naming_server(self, path)
+        return self.naming_server.size(path)
 
     def list_directories(self, path):
         """
@@ -124,7 +124,7 @@ class Client:
             print(result)
         else:
             for file in result:
-                size = self.naming_server.size(self, path + file)
+                size = self.naming_server.size(path + '/' + file)
                 print(file + '   ||   ' + size)
 
     # ===============================
@@ -204,5 +204,5 @@ while action.lower() != 'stop':
                    "Mkdir(<path of a directory>) - Create a directory \n"
                    "Rmdir(<path of a directory>) - Delete a file or a directory \n"
                    "List(<directory>) - List files in a directory with sizes \n"
-                   "Size(<path of a file\directory>) - Size a file or files in a directory \n")
+                   "Size(<path of a file>) - Size of a file \n")
     client.handle_user_input(action)
