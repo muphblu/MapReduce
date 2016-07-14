@@ -73,7 +73,7 @@ class Client:
                 main_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
                 replica_server_proxy = list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.connected_storages))[0][1]
                 replica_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
-                print(content + ' is written to storages and replicated')
+                print(chunks[chunk_info.chunk_position] + ' is written to storages and replicated')
         else:
             # If there are no available storage then output ERROR
             print(self.error_no_available_storage)
