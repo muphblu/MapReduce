@@ -1,5 +1,6 @@
 import xmlrpc.client
 import utils
+import sys
 
 
 class Client:
@@ -187,10 +188,8 @@ class Client:
             self.delete_directory(path)
 
 
-# TODO remove hardcoded variables
-address = 'localhost'
-port = 8000
-path = "path1"
+address = sys.argv[1]
+port = int(sys.argv[2])
 
 client = Client(address, port)
 
