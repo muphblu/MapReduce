@@ -15,30 +15,30 @@ def get_chuck_info(dict):
     return namedtuple('ChunkInfo', dict.keys())(**dict)
 
 
-def get_own_address():
-    return "localhost:8000"
-
-
-def get_servers_info():
-    return [
-        (1, "localhost:8001"),
-        (2, "localhost:8002"),
-        (3, "localhost:8003"),
-        (4, "localhost:8004")
-    ]
-
-
 # def get_own_address():
-#     return "server:8000"
+#     return "localhost:8000"
 #
 #
 # def get_servers_info():
 #     return [
-#         (1, "node1:8001"),
-#         (2, "node2:8002"),
-#         (3, "node3:8003"),
-#         (4, "node4:8004")
+#         (1, "localhost:8001"),
+#         (2, "localhost:8002"),
+#         (3, "localhost:8003"),
+#         (4, "localhost:8004")
 #     ]
+
+
+def get_own_address():
+    return "server:8000"
+
+
+def get_servers_info():
+    return [
+        (1, "node1:8001"),
+        (2, "node2:8002"),
+        (3, "node3:8003"),
+        (4, "node4:8004")
+    ]
 
 class DirFileEnum:
     """

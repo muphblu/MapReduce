@@ -301,7 +301,7 @@ class NamingServer:
                                               new_server)
                         new_chunks.append(new_chink)
                     except:
-                        print("Error 2")
+                        print("Error replication 2")
                         pass
                 else:
                     new_chunks.append(chunk)
