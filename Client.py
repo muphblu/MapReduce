@@ -126,7 +126,7 @@ class Client:
         else:
             for file in result:
                 size = self.naming_server.size(path + '/' + file)
-                print(file + '   ||   ' + size)
+                print(file + '   ||   ' + str(size))
 
     # ===============================
     # Helpers
@@ -188,8 +188,8 @@ class Client:
             self.delete_directory(path)
 
 
-address = sys.argv[1]
-port = int(sys.argv[2])
+address = "localhost" # sys.argv[1]
+port = 8000 # int(sys.argv[2])
 
 client = Client(address, port)
 
