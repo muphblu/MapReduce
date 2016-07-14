@@ -28,7 +28,7 @@ class StorageServer:
         time.sleep(1)
         os.mkdir(storage_path)
 
-        self.server = SimpleXMLRPCServer(address)
+        self.server = SimpleXMLRPCServer(address, logRequests=False)
         self.server.register_function(self.read, "read")
         self.server.register_function(self.write, "write")
         self.server.register_function(self.delete, "delete")

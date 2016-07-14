@@ -30,7 +30,7 @@ class NamingServer:
         time.sleep(1)
         os.mkdir(self.repository_root)
 
-        self.server = SimpleXMLRPCServer((address[0], int(address[1])), allow_none=True)
+        self.server = SimpleXMLRPCServer((address[0], int(address[1])), logRequests=False, allow_none=True)
 
         # registering functions
         self.server.register_function(self.read)
@@ -93,7 +93,7 @@ class NamingServer:
                         self.storage_servers)):
                     server.proxy.delete(chunk.chunk_name)
 
-            self.delete_server_file_info(path)
+            self.delete_server_file_info(total_path)
             os.remove(total_path)
             result = 'Removed file'
             print(result)
@@ -235,7 +235,8 @@ class NamingServer:
         :return:
         """
         for server in self.storage_servers:
-            server.files.remove(path)
+            if path in server.files:
+                server.files.remove(path)
 
     def get_storage_server_by_id(self, server_id):
         for server in self.storage_servers:
