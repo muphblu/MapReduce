@@ -112,7 +112,7 @@ class Client:
         :return:
         """
         if self.naming_server.get_type(path) == utils.DirFileEnum.File:
-            return str(self.naming_server.size(path))
+            return self.naming_server.size(path)
         else:
             return 'N/A'
 

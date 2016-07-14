@@ -254,7 +254,7 @@ class NamingServer:
                 try:
                     if not server.proxy.ping():
                         self.replicate_from_server(server.id)
-                except ConnectionError:
+                except:
                     self.replicate_from_server(server.id)
 
     def replicate_from_server(self, server_id):
@@ -282,7 +282,8 @@ class NamingServer:
                         new_chink = ChunkInfo(chunk.chunk_position, chunk.chunk_name, new_server,
                                               chunk.replica_server_id)
                         new_chunks.append(new_chink)
-                    except ConnectionError:
+                    except:
+                        print("Error replication 1")
                         pass
                 elif chunk.replica_server_id == server_id:
                     new_server = (server_id + 1) % len(utils.get_servers_info()) + 1
@@ -299,7 +300,8 @@ class NamingServer:
                         new_chink = ChunkInfo(chunk.chunk_position, chunk.chunk_name, chunk.main_server_id,
                                               new_server)
                         new_chunks.append(new_chink)
-                    except ConnectionError:
+                    except:
+                        print("Error 2")
                         pass
                 else:
                     new_chunks.append(chunk)
