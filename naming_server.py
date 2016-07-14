@@ -27,6 +27,7 @@ class NamingServer:
         # reset root filesystem directory
         if os.path.isdir(self.repository_root):
             shutil.rmtree(self.repository_root)
+        time.sleep(1)
         os.mkdir(self.repository_root)
 
         self.server = SimpleXMLRPCServer((address[0], int(address[1])), allow_none=True)
@@ -274,8 +275,8 @@ class NamingServer:
                         print('new server ', new_server)
                         self.get_storage_server_by_id(chunk.replica_server_id).proxy.replicate(
                             chunk.chunk_name, new_server)
-                    except ConnectionError:
-                        pass
+                    except Exception as err:
+                        print("Unexpected error:" + str(err))
                 if chunk.replica_server_id == server_id:
                     new_server = (server_id + 1) % len(utils.get_servers_info())
                     while True:
@@ -288,8 +289,8 @@ class NamingServer:
                         print('new server ', new_server)
                         self.get_storage_server_by_id(chunk.main_server_id).proxy.replicate(
                             chunk.chunk_name, new_server)
-                    except ConnectionError:
-                        pass
+                    except Exception as err:
+                        print("Unexpected error:" + str(err))
         # Assume that broken server is not containing files anymore
         server.files.clear()
 

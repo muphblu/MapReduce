@@ -1,6 +1,9 @@
 import os
 import shutil
 from xmlrpc.server import SimpleXMLRPCServer
+
+import time
+
 import utils
 
 
@@ -20,6 +23,7 @@ class StorageServer:
         storage_path = 'storage' + str(server_id)
         if os.path.isdir(storage_path):
             shutil.rmtree(storage_path)
+        time.sleep(1)
         os.mkdir(storage_path)
 
         self.server = SimpleXMLRPCServer(address)

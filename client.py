@@ -128,8 +128,7 @@ class Client:
             print(result)
         else:
             for file in result:
-                # TODO: diferntiate dirs and files
-                size = self.naming_server.size(path + '/' + file)
+                size = self.size_query(path + '/' + str(file))
                 print(file + '   ||   ' + str(size))
 
     # ===============================
