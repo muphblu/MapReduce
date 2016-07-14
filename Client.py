@@ -9,7 +9,7 @@ class Client:
     # ===============================
     ERROR_NO_AVAILABLE_STORAGE = 'ERROR. No available storage'
     ERROR_NO_PATH = 'ERROR. No storage with this path'
-    ONE_CHUNK_CHARS_COUNT = 1024
+    ONE_CHUNK_CHARS_COUNT = 50
 
     # ===============================
     # Client
@@ -42,13 +42,13 @@ class Client:
         Read file from storage servers through path received by Naming Server
         :param path: Path in FS from where to read
         """
-        storage_list = self.naming_server.read(path)
-        if len(storage_list) > 0:
+        chunk_info_list = self.naming_server.read(path)
+        if len(chunk_info_list) > 0:
             file_content = ''
-            for index in range(len(storage_list)):
-                server_id = storage_list[index][0]
-                chunk_id = storage_list[index][1]
-                file_content += self.connected_storages[server_id].read(chunk_id)
+            for index in range(len(chunk_info_list)):
+                chunk_info = utils.get_chuck_info(chunk_info_list[index])
+                main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
+                file_content += main_server.read(chunk_info.chunk_name)
         else:
             # If there are no such path in storages then output error
             file_content = self.error_no_path
@@ -59,20 +59,20 @@ class Client:
         Write file to storage servers through path received by Naming Server
         :param path: Path in FS from where to write
         """
-        chunk_counts = self.get_chunk_counts(content)
-        size = sys.getsizeof(content)
-        storage_list = self.naming_server.write(path, size, chunk_counts)
+        chunks = self.get_chunks(content)
+        size = len(content)
+        chunk_info_list = self.naming_server.write(path, size, len(chunks))
 
         # Sorting by chunk position
-        storage_list = sorted(storage_list, key=lambda storage: storage['chunk_position'])
-        if len(storage_list) > 0:
-            for index in range(len(storage_list)):
-                storage = utils.get_chuck_info(storage_list[index])
+        chunk_info_list = sorted(chunk_info_list, key=lambda storage: storage['chunk_position'])
+        if len(chunk_info_list) > 0:
+            for index in range(len(chunk_info_list)):
+                chunk_info = utils.get_chuck_info(chunk_info_list[index])
 
-                main_server = self.connected_storages[storage.main_server_id][1]
-                main_server.write(storage.chunk_name, content)
-                replica_server = self.connected_storages[storage.replica_server_id][1]
-                replica_server.write(storage.chunk_name, content)
+                main_server_proxy = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
+                main_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
+                replica_server_proxy = list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.connected_storages))[0][1]
+                replica_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
                 print(content + ' is written to storages and replicated')
         else:
             # If there are no available storage then output ERROR
@@ -125,13 +125,14 @@ class Client:
             print(result)
         else:
             for file in result:
+                # TODO: diferntiate dirs and files
                 size = self.naming_server.size(path + '/' + file)
                 print(file + '   ||   ' + str(size))
 
     # ===============================
     # Helpers
     # ===============================
-    def get_chunk_counts(self, content):
+    def get_chunks(self, content):
         """
         Return the number of chunks to write
         :param content: content of a file to write
@@ -141,18 +142,21 @@ class Client:
         one_chunk_content = ''
         chunk_counts = 0
         index = 0
+        result_chunks_content = []
         while index <= len(words):
             if index != len(words):
                 if len(one_chunk_content + words[index]) <= self.ONE_CHUNK_CHARS_COUNT:
-                    one_chunk_content += words[index]
+                    one_chunk_content += " " + words[index]
                     index += 1
                 else:
+                    result_chunks_content.append(one_chunk_content)
                     one_chunk_content = ''
                     chunk_counts += 1
             else:
+                result_chunks_content.append(one_chunk_content)
                 chunk_counts += 1
                 break
-        return chunk_counts
+        return result_chunks_content
 
     def handle_user_input(self, user_input):
         """
