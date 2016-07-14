@@ -60,7 +60,7 @@ class Client:
         :param path: Path in FS from where to write
         """
         chunk_counts = self.get_chunk_counts(content)
-        size = self.naming_server.size(path)
+        size = sys.getsizeof(content)
         storage_list = self.naming_server.write(path, size, chunk_counts)
 
         # Sorting by chunk position
@@ -188,8 +188,11 @@ class Client:
             self.delete_directory(path)
 
 
-address = "localhost" # sys.argv[1]
-port = 8000 # int(sys.argv[2])
+#address = sys.argv[1]
+#port = int(sys.argv[2])
+
+address = 'localhost'
+port = 8000
 
 client = Client(address, port)
 
