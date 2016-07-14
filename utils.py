@@ -27,7 +27,7 @@ def get_servers_info():
     ]
 
 
-class DirFileEnum(Enum):
+class DirFileEnum:
     """
     Enum for provide info about path, is it directory, file, or neither
     """

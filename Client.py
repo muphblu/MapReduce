@@ -111,7 +111,10 @@ class Client:
         :param path: Directory path in FS that is deleted
         :return:
         """
-        return self.naming_server.size(path)
+        if self.naming_server.get_type(path) == utils.DirFileEnum.File:
+            return self.naming_server.size(path)
+        else:
+            return 'N/A'
 
     def list_directories(self, path):
         """
@@ -125,8 +128,7 @@ class Client:
             print(result)
         else:
             for file in result:
-                size = self.naming_server.size(path + '/' + file)
-                print(file + '   ||   ' + str(size))
+                print(file + '   ||   ' + str(self.size_query(path + '/' + file)))
 
     # ===============================
     # Helpers
