@@ -31,7 +31,6 @@ class StorageServer:
         :return: list of bytes
         """
         result_path = self.root_directory + '/' + chunk_name
-        # TODO: put all files in separate directory
         if not os.path.exists(result_path):
             raise FileNotFoundError()
         with open(result_path, mode='r') as file:
@@ -66,9 +65,8 @@ class StorageServer:
         :param chunk_name: chunk to replicate
         :param server_id: id of the server where to replicate
         """
-        result_path = self.root_directory + '/' + chunk_name
         server = list(filter(lambda x: x.id == server_id, self.other_servers))[0]
-        server.proxy.write(result_path, self.read(result_path))
+        return server.proxy.write(chunk_name, self.read(chunk_name))
 
     def ping(self):
         return True

@@ -4,6 +4,8 @@ import os
 import uuid
 from threading import Thread
 
+import time
+
 import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
 from xmlrpc.server import SimpleXMLRPCServer
@@ -34,7 +36,7 @@ class NamingServer:
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
 
-        Thread(target=self.heartbeat_loop).start()
+        Thread(target=self.ping_echo_loop).start()
         # Starting RPC server(should be last)
         self.server.serve_forever()
 
@@ -237,9 +239,9 @@ class NamingServer:
     # Replication
     # ===============================
 
-    def heartbeat_loop(self):
+    def ping_echo_loop(self):
         while True:
-            print('started new watchdog loop')
+            time.sleep(3)
             for server in self.storage_servers:
                 try:
                     if not server.proxy.ping():
@@ -269,7 +271,6 @@ class NamingServer:
                     except ConnectionError:
                         pass
                 if chunk.replica_server_id == server_id:
-                    new_server = (server_id + 1) % len(utils.get_servers_info())
                     while True:
                         new_server = (new_server + 1) % len(utils.get_servers_info())
                         if new_server == chunk.main_server_id:
