@@ -4,6 +4,8 @@ from xmlrpc.server import SimpleXMLRPCServer
 
 import time
 
+import sys
+
 import utils
 
 
@@ -87,3 +89,18 @@ class StorageServer:
     # ===============================
     def init_proxies(self, servers_to_connect):
         return list(map(lambda x: utils.StorageServerInfo(x[0], x[1]), servers_to_connect))
+
+def get_server_addr(server_id):
+    for x in utils.get_servers_info():
+        if x[0] == server_id:
+            return x[1]
+
+server_id = 1
+if sys.argv[1] is not None:
+    server_id = int(sys.argv[1])
+
+servers = utils.get_servers_info()
+addr_str = get_server_addr(server_id)
+address = addr_str.split(":")
+StorageServer(server_id, (address[0], int(address[1])))
+
