@@ -271,6 +271,7 @@ class NamingServer:
                     except ConnectionError:
                         pass
                 if chunk.replica_server_id == server_id:
+                    new_server = (server_id + 1) % len(utils.get_servers_info())
                     while True:
                         new_server = (new_server + 1) % len(utils.get_servers_info())
                         if new_server == chunk.main_server_id:
@@ -283,6 +284,8 @@ class NamingServer:
                             chunk.chunk_name, new_server)
                     except ConnectionError:
                         pass
+        # Assume that broken server is not containing files anymore
+        server.files.clear()
 
     def main(self, argv):
         # self.mkdir('/r')
