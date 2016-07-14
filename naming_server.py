@@ -261,13 +261,16 @@ class NamingServer:
         # TODO use queue to put replication tasks and separate thread that will perform replication
         server = self.get_storage_server_by_id(server_id)
         for file in server.files:
-            for chunk in FileInfo.get_file_info(file).chunks:
+            file_info = FileInfo.get_file_info(file)
+            new_chunks = []
+            for chunk in file_info.chunks:
                 print(chunk)
                 if chunk.main_server_id == server_id:
-                    new_server = (server_id + 1) % len(utils.get_servers_info())
+                    new_server = (server_id + 1) % len(utils.get_servers_info()) + 1
                     while True:
-                        new_server = (new_server + 1) % len(utils.get_servers_info())
+                        # new_server = (new_server + 1) % len(utils.get_servers_info())
                         if new_server == chunk.replica_server_id:
+                            new_server = (new_server + 1) % len(utils.get_servers_info()) + 1
                             continue
                         else:
                             break
@@ -275,13 +278,16 @@ class NamingServer:
                         print('new server ', new_server)
                         self.get_storage_server_by_id(chunk.replica_server_id).proxy.replicate(
                             chunk.chunk_name, new_server)
-                    except Exception as err:
-                        print("Unexpected error:" + str(err))
-                if chunk.replica_server_id == server_id:
-                    new_server = (server_id + 1) % len(utils.get_servers_info())
+                        new_chink = ChunkInfo(chunk.chunk_position, chunk.chunk_name, new_server,
+                                              chunk.replica_server_id)
+                        new_chunks.append(new_chink)
+                    except ConnectionError:
+                        pass
+                elif chunk.replica_server_id == server_id:
+                    new_server = (server_id + 1) % len(utils.get_servers_info()) + 1
                     while True:
-                        new_server = (new_server + 1) % len(utils.get_servers_info())
                         if new_server == chunk.main_server_id:
+                            new_server = (new_server + 1) % len(utils.get_servers_info()) + 1
                             continue
                         else:
                             break
@@ -289,8 +295,16 @@ class NamingServer:
                         print('new server ', new_server)
                         self.get_storage_server_by_id(chunk.main_server_id).proxy.replicate(
                             chunk.chunk_name, new_server)
-                    except Exception as err:
-                        print("Unexpected error:" + str(err))
+                        new_chink = ChunkInfo(chunk.chunk_position, chunk.chunk_name, chunk.main_server_id,
+                                              new_server)
+                        new_chunks.append(new_chink)
+                    except ConnectionError:
+                        pass
+                else:
+                    new_chunks.append(chunk)
+            file_info.chunks = new_chunks
+            file_info.save_file()
+            self.add_server_file_info(new_chunks, file)
         # Assume that broken server is not containing files anymore
         server.files.clear()
 
