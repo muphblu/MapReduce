@@ -8,7 +8,7 @@ class Client:
     # ===============================
     ERROR_NO_AVAILABLE_STORAGE = 'ERROR. No available storage'
     ERROR_NO_PATH = 'ERROR. No storage with this path'
-    ONE_CHUNK_CHARS_COUNT = 4
+    ONE_CHUNK_CHARS_COUNT = 1024
 
     # ===============================
     # Client
