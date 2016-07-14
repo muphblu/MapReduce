@@ -11,6 +11,7 @@ class StorageServer:
         :param address: tuple with network address and port
         """
         self.id = server_id
+        self.root_directory = "storage" + str(self.id)
         self.other_servers = self.init_proxies(list(
             filter(lambda server: server[0] != self.id, utils.get_servers_info())))
 
@@ -29,10 +30,11 @@ class StorageServer:
         :param chunk_name: id of the chunk to be read from storage server
         :return: list of bytes
         """
+        result_path = self.root_directory + '/' + chunk_name
         # TODO: put all files in separate directory
-        if not os.path.exists(chunk_name):
+        if not os.path.exists(result_path):
             raise FileNotFoundError()
-        with open(chunk_name, mode='r') as file:
+        with open(result_path, mode='r') as file:
             return file.read()
 
     def write(self, chunk_name, content):
@@ -43,7 +45,8 @@ class StorageServer:
         :param content: content of this chunk represented as list of bytes
         :return: status
         """
-        with open(chunk_name, mode='x') as file:
+        result_path = self.root_directory + '/' + chunk_name
+        with open(result_path, mode='x') as file:
             file.write(content)
         return True
 
@@ -53,7 +56,8 @@ class StorageServer:
         :param chunk_name: id of the chunk to be deleted
         :return: status
         """
-        os.remove(chunk_name)
+        result_path = self.root_directory + '/' + chunk_name
+        os.remove(result_path)
         return True
 
     def replicate(self, chunk_name, server_id):
@@ -62,8 +66,9 @@ class StorageServer:
         :param chunk_name: chunk to replicate
         :param server_id: id of the server where to replicate
         """
+        result_path = self.root_directory + '/' + chunk_name
         server = list(filter(lambda x: x.id == server_id, self.other_servers))[0]
-        server.proxy.write(chunk_name, self.read(chunk_name))
+        server.proxy.write(result_path, self.read(result_path))
 
     def ping(self):
         return True
