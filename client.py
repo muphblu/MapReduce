@@ -196,9 +196,11 @@ class Client:
 
 #address = sys.argv[1]
 #port = int(sys.argv[2])
+serv_addr_str = utils.get_own_address()
+serv_addr = serv_addr_str.split(":")
 
-address = 'localhost'
-port = 8000
+address = serv_addr[0]
+port = serv_addr[1]
 
 client = Client(address, port)
 
