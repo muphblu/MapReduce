@@ -4,6 +4,7 @@ import os
 import shutil
 import uuid
 from threading import Thread
+from job import Job
 
 import time
 
@@ -42,7 +43,7 @@ class NamingServer:
         self.server.register_function(self.rmdir)
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
-        self.server.register_function(self.do_the_job)
+        self.server.register_function(self.receive_the_job)
 
         Thread(target=self.ping_echo_loop).start()
         # Starting RPC server(should be last)
@@ -200,8 +201,12 @@ class NamingServer:
     # Job tracker
     # ===============================
     # TODO Implement
-    def do_the_job(self, job):
+    def receive_the_job(self, job):
         job = job
+        if os.path.exists(job.get_file_path()):
+            return True
+        else:
+            return False
 
     # ===============================
     # Helpers

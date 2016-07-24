@@ -141,9 +141,15 @@ class Slave:
     # Communication with job tracker
     # ===============================
     def do_the_job(self, path):
-        data = self.read(path)
-        job = Job(data, self.mapper, self.reducer)
-        self.naming_server.do_the_job(job)
+        # TODO Creating a content for mapper and reducer
+        self.write(self.mapper.get_output_path(), '')
+        self.write(self.reducer.get_output_path(), '')
+
+        job = Job(path, self.mapper, self.reducer)
+        if self.naming_server.receive_the_job(job):
+            print('Job is received successfully')
+        else:
+            print('No file with such path')
 
     # ===============================
     # Helpers
