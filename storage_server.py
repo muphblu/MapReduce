@@ -34,6 +34,14 @@ class StorageServer:
         self.server.register_function(self.delete, "delete")
         self.server.register_function(self.replicate, "replicate")
         self.server.register_function(self.ping, "ping")
+        self.server.register_function(self.ping, "serve_forever")
+
+    def serve_forever(self):
+        """
+        Starts a server
+        :return:
+        """
+        print('Storage server starts')
         self.server.serve_forever()
 
     def read(self, chunk_name):
@@ -96,11 +104,11 @@ def get_server_addr(server_id):
             return x[1]
 
 server_id = 1
-if sys.argv[1] is not None:
-    server_id = int(sys.argv[1])
+if sys.argv[3] is not None:
+    server_id = int(sys.argv[3])
 
 servers = utils.get_servers_info()
 addr_str = get_server_addr(server_id)
 address = addr_str.split(":")
-StorageServer(server_id, (address[0], int(address[1])))
+StorageServer(server_id, ("localhost", int(address[1])))
 

@@ -1,9 +1,17 @@
 import xmlrpc.client
-import utils
+
 import sys
+from threading import Thread
+
+from reducer import Reducer
+
+import utils
+from mapper import Mapper
+from storage_server import StorageServer
+from job import Job
 
 
-class Client:
+class Slave:
     # ===============================
     # Error definitions
     # ===============================
@@ -14,28 +22,24 @@ class Client:
     # ===============================
     # Client
     # ===============================
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, storage_id):
+        # Initializing a client
         try:
             self.naming_server = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-            self.connected_storages = []
-            self.storage_coordinates = self.naming_server.get_storages_info()
             print('Connection to naming server is established')
-
-            # Connecting to storages
-            for storage in self.storage_coordinates:
-                server_id = storage[0]
-                # storage[1] is string 'ip:port'
-                coordinates = storage[1].split(":")
-                ip = coordinates[0]
-                port = coordinates[1]
-                storage_proxy = xmlrpc.client.ServerProxy('http://' + ip + ':' + str(port))
-                print('Storage with ip = ' + ip + ' is connected')
-
-                storage_tuple = (server_id, storage_proxy)
-                self.connected_storages.append(storage_tuple)
         except WindowsError:
-            print('Unavailable naming server')
+            print('Error in naming server')
             exit()
+
+        # Initializing mapper and reducer
+        # TODO Change MR after implementing them
+        file = ''
+        self.mapper = Mapper(file)
+        self.reducer = Reducer()
+
+        # Initializing a storage server. storage_id = [1, 4]
+        self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))
+        Thread(target=self.storage_server.serve_forever).start()
 
     def read(self, path):
         """
@@ -69,9 +73,11 @@ class Client:
             for index in range(len(chunk_info_list)):
                 chunk_info = utils.get_chuck_info(chunk_info_list[index])
 
-                main_server_proxy = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
+                main_server_proxy = \
+                list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
                 main_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
-                replica_server_proxy = list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.connected_storages))[0][1]
+                replica_server_proxy = \
+                list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.connected_storages))[0][1]
                 replica_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
                 print(chunks[chunk_info.chunk_position] + ' is written to storages and replicated')
         else:
@@ -130,6 +136,14 @@ class Client:
             for file in result:
                 size = self.size_query(path + '/' + str(file))
                 print(file + '   ||   ' + str(size))
+
+    # ===============================
+    # Communication with job tracker
+    # ===============================
+    def do_the_job(self, path):
+        data = self.read(path)
+        job = Job(data, self.mapper, self.reducer)
+        self.naming_server.do_the_job(job)
 
     # ===============================
     # Helpers
@@ -192,17 +206,21 @@ class Client:
         elif 'rmdir' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
             self.delete_directory(path)
+        elif 'dojob' in user_input.lower():
+            path = user_input.split('(', 3)[1][:-1]
+            self.do_the_job(path)
 
 
-#address = sys.argv[1]
-#port = int(sys.argv[2])
+# address = sys.argv[1]
+# port = int(sys.argv[2])
 serv_addr_str = utils.get_own_address()
 serv_addr = serv_addr_str.split(":")
 
 address = serv_addr[0]
 port = serv_addr[1]
+storage_id = int(sys.argv[3])
 
-client = Client(address, port)
+client = Slave(address, port, storage_id)
 
 action = ''
 while action.lower() != 'stop':
@@ -214,5 +232,6 @@ while action.lower() != 'stop':
                    "Mkdir(<path of a directory>) - Create a directory \n"
                    "Rmdir(<path of a directory>) - Delete a file or a directory \n"
                    "List(<directory>) - List files in a directory with sizes \n"
-                   "Size(<path of a file>) - Size of a file \n")
+                   "Size(<path of a file>) - Size of a file \n"
+                   "DoJob(<path of a file>) - Sends a job to job tracker \n")
     client.handle_user_input(action)

@@ -30,7 +30,7 @@ class NamingServer:
         time.sleep(1)
         os.mkdir(self.repository_root)
 
-        self.server = SimpleXMLRPCServer((address[0], int(address[1])), logRequests=False, allow_none=True)
+        self.server = SimpleXMLRPCServer(('localhost', int(address[1])), logRequests=False, allow_none=True)
 
         # registering functions
         self.server.register_function(self.read)
@@ -42,6 +42,7 @@ class NamingServer:
         self.server.register_function(self.rmdir)
         self.server.register_function(self.get_type)
         self.server.register_function(self.get_storages_info)
+        self.server.register_function(self.do_the_job)
 
         Thread(target=self.ping_echo_loop).start()
         # Starting RPC server(should be last)
@@ -194,6 +195,13 @@ class NamingServer:
         :return: list with tuples where first param is server id and second is server network address "127.0.0.1:8000"
         """
         return utils.get_servers_info()
+
+    # ===============================
+    # Job tracker
+    # ===============================
+    # TODO Implement
+    def do_the_job(self, job):
+        job = job
 
     # ===============================
     # Helpers
