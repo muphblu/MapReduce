@@ -3,8 +3,8 @@ import utils
 OUTPUT_FILE_PATH = 'reducer'
 
 
-# Input example: [('Hello', 1), ('Hello', 1), ('World', 1)]
-def start_reducer(file_content, info_content, words):
+# Input example words: [('Hello', 1), ('Hello', 1), ('World', 1)]
+def start_reducer(words):
     sorted_words = sorted(words)
     current_word = ""
     result = []
