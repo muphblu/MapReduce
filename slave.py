@@ -4,6 +4,7 @@ import xmlrpc.client
 import sys
 from threading import Thread
 
+import mapreduce
 import utils
 from mapper import Mapper
 from reducer import Reducer
@@ -146,8 +147,8 @@ class Slave:
         :param path:
         :return:
         """
-        mapper_content = utils.get_file_content(self.mapper.get_output_path())
-        reducer_content = utils.get_file_content(self.reducer.get_output_path())
+        mapper_content = mapreduce.get_map_code()
+        reducer_content = mapreduce.get_reducer_code()
         job = Job(path, mapper_content, reducer_content)
         if self.naming_server.receive_the_job(job):
             print('Job is received successfully')
@@ -162,17 +163,13 @@ class Slave:
         :param job_content:
         :return:
         """
-        if os.path.exists(self.JOB_CONTENT_PATH):
-            os.remove(self.JOB_CONTENT_PATH)
-        with open(self.JOB_CONTENT_PATH, mode='x') as file:
-            file.write(job_content)
         print("The job is received")
 
         file_content = self.read(file_path)
         print("Reading the file with path " + file_path)
-        self.exec_job(self.JOB_CONTENT_PATH, file_content, info)
+        self.exec_job(job_content, file_content, info)
 
-    def exec_job(self, job_content_path, file_content, info_content):
+    def exec_job(self, job_content, file_content, info_content):
         """
         Execute a file of a job
         :param job_content_path:
@@ -180,7 +177,7 @@ class Slave:
         :param info_content:
         :return:
         """
-        os.system(job_content_path + ' ' + file_content + ' ' + info_content)
+        exec(job_content)
 
     # ===============================
     # Helpers
