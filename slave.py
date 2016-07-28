@@ -1,10 +1,12 @@
+import os
 import xmlrpc.client
 
 import sys
 from threading import Thread
 
 import utils
-from mapreduce import MapReduce
+from mapper import Mapper
+from reducer import Reducer
 from storage_server import StorageServer
 from job import Job
 
@@ -30,10 +32,8 @@ class Slave:
             exit()
 
         # Initializing mapper and reducer
-        # TODO Change MR after implementing them
-        file = ''
-        self.mapper = MapReduce(file)
-        self.reducer = MapReduce()
+        self.mapper = Mapper()
+        self.reducer = Reducer()
 
         # Initializing a storage server. storage_id = [1, 4]
         self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))
@@ -72,10 +72,10 @@ class Slave:
                 chunk_info = utils.get_chuck_info(chunk_info_list[index])
 
                 main_server_proxy = \
-                list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
+                    list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
                 main_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
                 replica_server_proxy = \
-                list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.connected_storages))[0][1]
+                    list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.connected_storages))[0][1]
                 replica_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
                 print(chunks[chunk_info.chunk_position] + ' is written to storages and replicated')
         else:
@@ -138,16 +138,31 @@ class Slave:
     # ===============================
     # Communication with job tracker
     # ===============================
-    def do_the_job(self, path):
-        # TODO Creating a content for mapper and reducer
-        self.write(self.mapper.get_output_path(), '')
-        self.write(self.reducer.get_output_path(), '')
+    job_content_path = 'job_content.py'
 
-        job = Job(path, self.mapper, self.reducer)
+    def send_the_job(self, path):
+        """
+        Send a job to job tracker
+        :param path:
+        :return:
+        """
+        mapper_content = utils.get_file_content(self.mapper.get_output_path())
+        reducer_content = utils.get_file_content(self.reducer.get_output_path())
+        job = Job(path, mapper_content, reducer_content)
         if self.naming_server.receive_the_job(job):
             print('Job is received successfully')
         else:
             print('No file with such path')
+
+    def receive_the_job(self, job_content):
+        """
+        Receive a job from job tracker to execute
+        :param path:
+        :return:
+        """
+        with open(self.job_content_path, mode='x') as file:
+            file.write(job_content)
+        print("The job is received")
 
     # ===============================
     # Helpers
@@ -212,7 +227,7 @@ class Slave:
             self.delete_directory(path)
         elif 'dojob' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
-            self.do_the_job(path)
+            self.send_the_job(path)
 
 
 # address = sys.argv[1]
