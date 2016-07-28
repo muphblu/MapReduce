@@ -1,4 +1,5 @@
 import re
+
 import utils
 
 
@@ -19,7 +20,7 @@ class Mapper:
             for w in words:
                 result.append((w, 1))
                 print('Mapper: ' + w + ':' + 1)
-        utils.write_output_result(self.map_output_file_path, result)
+        utils.write_content(self.map_output_file_path, result)
         return result
 
     def get_output_path(self):

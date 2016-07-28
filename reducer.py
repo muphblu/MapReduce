@@ -25,7 +25,7 @@ class Reducer:
                 values.append(i[1])
         print("Reducer result: %s | %d" % (current_word, sum(values)))
         result.append((current_word, sum(values)))
-        utils.write_output_result(self.reduce_output_file_path, result)
+        utils.write_content(self.reduce_output_file_path, result)
 
     def get_output_path(self):
         return self.output_file_path

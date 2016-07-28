@@ -42,11 +42,12 @@ def get_slaves_info():
         (4, "node4:8004")
     ]
 
-def write_output_result(self, path, result):
-    result_path = self.root_directory + '/' + path
-    with open(result_path, mode='x') as file:
-        file.write(result)
-    print('The result is written to ' + result_path)
+
+def write_content(self, path, content):
+    full_path = self.root_directory + '/' + path
+    with open(full_path, mode='x') as file:
+        file.write(content)
+    print('The result is written to ' + full_path)
 
 
 def get_file_content(self, path):
@@ -54,6 +55,7 @@ def get_file_content(self, path):
         raise FileNotFoundError()
     with open(path, mode='r') as file:
         return file.read()
+
 
 class DirFileEnum:
     """
