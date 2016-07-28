@@ -8,6 +8,7 @@ class Mapper:
 
     def __init__(self, map_output_file_path='/mapper'):
         self.map_output_file_path = map_output_file_path
+        print('Mapper is initialized')
 
     def map(self, text):
         result = []

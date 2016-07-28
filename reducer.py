@@ -6,6 +6,7 @@ class Reducer:
 
     def __init__(self, reduce_output_file_path="/reducer"):
         self.reduce_output_file_path = reduce_output_file_path
+        print('Reducer is initialized')
 
     # Input example: [('Hello', 1), ('Hello', 1), ('World', 1)]
     def reduce(self, words):

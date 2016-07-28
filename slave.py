@@ -138,7 +138,7 @@ class Slave:
     # ===============================
     # Communication with job tracker
     # ===============================
-    job_content_path = 'job_content.py'
+    JOB_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + '\job_content.py'
 
     def send_the_job(self, path):
         """
@@ -162,19 +162,25 @@ class Slave:
         :param job_content:
         :return:
         """
-        with open(self.job_content_path, mode='x') as file:
+        if os.path.exists(self.JOB_CONTENT_PATH):
+            os.remove(self.JOB_CONTENT_PATH)
+        with open(self.JOB_CONTENT_PATH, mode='x') as file:
             file.write(job_content)
         print("The job is received")
+
         file_content = self.read(file_path)
         print("Reading the file with path " + file_path)
-        self.exec_job(job_content, file_content, info)
+        self.exec_job(self.JOB_CONTENT_PATH, file_content, info)
 
-    def exec_job(self, job_content, file_content, info_content):
+    def exec_job(self, job_content_path, file_content, info_content):
         """
         Execute a file of a job
+        :param job_content_path:
+        :param file_content:
+        :param info_content:
         :return:
         """
-        exec(open(job_content).read(), file_content, info_content)
+        os.system(job_content_path + ' ' + file_content + ' ' + info_content)
 
     # ===============================
     # Helpers
@@ -242,8 +248,8 @@ class Slave:
             self.send_the_job(path)
 
 
-# address = sys.argv[1]
-# port = int(sys.argv[2])
+
+
 serv_addr = utils.get_master_address()
 
 address = serv_addr[0]
@@ -252,7 +258,13 @@ storage_id = int(sys.argv[3])
 
 client = Slave(address, port, storage_id)
 
-action = ''
+job_content = ''
+with open('mapper.py', mode='r') as file:
+    job_content = file.read()
+
+client.receive_the_job('', '', job_content)
+
+'''action = ''
 while action.lower() != 'stop':
     action = input("Input one of the following commands:: \n"
                    "Stop - Stop the client \n"
@@ -264,4 +276,4 @@ while action.lower() != 'stop':
                    "List(<directory>) - List files in a directory with sizes \n"
                    "Size(<path of a file>) - Size of a file \n"
                    "DoJob(<path of a file>) - Sends a job to job tracker \n")
-    client.handle_user_input(action)
+    client.handle_user_input(action)'''
