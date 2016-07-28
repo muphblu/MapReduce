@@ -109,7 +109,5 @@ server_id = 1
 if sys.argv[3] is not None:
     server_id = int(sys.argv[3])
 
-servers = utils.get_slaves_info()
-addr_str = get_server_addr(server_id)
-address = addr_str.split(":")
-StorageServer(server_id, ("localhost", int(address[1])))
+address = get_server_addr(server_id)
+StorageServer(server_id, address)
