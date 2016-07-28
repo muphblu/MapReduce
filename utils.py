@@ -121,5 +121,4 @@ class StorageServerInfo:
         self.files = set()
 
     def init_proxy(self):
-        address = self.address.split(":")
-        return ServerProxy('http://' + address[0] + ':' + address[1])
+        return ServerProxy('http://' + self.address[0] + ':' + str(self.address[1]))
