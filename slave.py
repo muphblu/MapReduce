@@ -3,10 +3,8 @@ import xmlrpc.client
 import sys
 from threading import Thread
 
-from reducer import Reducer
-
 import utils
-from mapper import Mapper
+from mapreduce import MapReduce
 from storage_server import StorageServer
 from job import Job
 
@@ -34,8 +32,8 @@ class Slave:
         # Initializing mapper and reducer
         # TODO Change MR after implementing them
         file = ''
-        self.mapper = Mapper(file)
-        self.reducer = Reducer()
+        self.mapper = MapReduce(file)
+        self.reducer = MapReduce()
 
         # Initializing a storage server. storage_id = [1, 4]
         self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))

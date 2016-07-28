@@ -11,10 +11,11 @@ import time
 import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
 from xmlrpc.server import SimpleXMLRPCServer
+from xmlrpc.client import ServerProxy
 
 
 class NamingServer:
-    def __init__(self):
+    def __init__(self, job_tracker_address):
         """NamingServer"""
         self.repository_root = 'files/filesystem/'
 
@@ -25,6 +26,8 @@ class NamingServer:
         self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in
                                 utils.get_slaves_info()]
 
+        # Connection to Job Tracker
+        self.job_tracker_proxy = ServerProxy('http://' + job_tracker_address[0] + ':' + job_tracker_address[1])
         # reset root filesystem directory
         if os.path.isdir(self.repository_root):
             shutil.rmtree(self.repository_root)
@@ -266,9 +269,13 @@ class NamingServer:
             for server in self.storage_servers:
                 try:
                     if not server.proxy.ping():
-                        self.replicate_from_server(server.id)
+                        self.handle_server_failure(server.id)
                 except:
-                    self.replicate_from_server(server.id)
+                    self.handle_server_failure(server.id)
+
+    def handle_server_failure(self, server_id):
+        self.job_tracker_proxy.man_down(server_id)
+        self.replicate_from_server(server_id)
 
     def replicate_from_server(self, server_id):
         print('replicating ', server_id)
