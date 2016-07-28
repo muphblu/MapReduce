@@ -149,7 +149,7 @@ class Slave:
         else:
             print('No file with such path')
 
-    def receive_the_job(self, file_path, info, job_content):
+    def start_map(self, file_path, info):
         """
         Receive a job from job tracker to execute
         :param info:
@@ -157,26 +157,18 @@ class Slave:
         :param job_content:
         :return:
         """
-        print("The job is received")
-
+        print("Map is received from JT")
         file_content = self.read(file_path)
         print("Reading the file with path " + file_path)
-        self.exec_job(job_content, file_content, info)
+        mapreduce.start_map(file_content, info)
 
-    def exec_job(self, job_content, file_content, info_content):
+    def start_reduce(self, words, info_content):
         """
         Execute a file of a job
-        :param job_content_path:
-        :param file_content:
         :param info_content:
         :return:
         """
-        exec(job_content)
-        if map in job_content:
-            exec('start_mapper(' + file_content + ',' + info_content + ')')
-        else:
-            # TODO Add 3rd parameter words
-            exec('start_reducer(' + file_content + ',' + info_content + ',' + '\''')')
+        mapreduce.start_reduce(words, info_content)
 
     # ===============================
     # Helpers
