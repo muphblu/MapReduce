@@ -217,8 +217,7 @@ class Slave:
 
 # address = sys.argv[1]
 # port = int(sys.argv[2])
-serv_addr_str = utils.get_master_address()
-serv_addr = serv_addr_str.split(":")
+serv_addr = utils.get_master_address()
 
 address = serv_addr[0]
 port = serv_addr[1]

@@ -20,37 +20,20 @@ class NamingServer:
         self.repository_root = 'files/filesystem/'
 
         # Naming server configuration
-        address_str = utils.get_master_address()
-        address = address_str.split(":")
+        address = utils.get_master_address()
         # Connection to storage servers
         self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in
                                 utils.get_slaves_info()]
 
         # Connection to Job Tracker
-        self.job_tracker_proxy = ServerProxy('http://' + job_tracker_address[0] + ':' + job_tracker_address[1])
+        self.job_tracker_proxy = ServerProxy('http://' + job_tracker_address[0] + ':' + str(job_tracker_address[1]))
         # reset root filesystem directory
         if os.path.isdir(self.repository_root):
             shutil.rmtree(self.repository_root)
         time.sleep(1)
         os.mkdir(self.repository_root)
 
-        self.server = SimpleXMLRPCServer(('localhost', int(address[1])), logRequests=False, allow_none=True)
-
-        # registering functions
-        self.server.register_function(self.read)
-        self.server.register_function(self.write)
-        self.server.register_function(self.delete)
-        self.server.register_function(self.size)
-        self.server.register_function(self.list)
-        self.server.register_function(self.mkdir)
-        self.server.register_function(self.rmdir)
-        self.server.register_function(self.get_type)
-        self.server.register_function(self.get_storages_info)
-        self.server.register_function(self.receive_the_job)
-
         Thread(target=self.ping_echo_loop).start()
-        # Starting RPC server(should be last)
-        self.server.serve_forever()
 
     # ===============================
     # NamingServer API

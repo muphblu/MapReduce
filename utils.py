@@ -29,7 +29,8 @@ def get_chuck_info(dict):
 
 
 def get_master_address():
-    return "server:8000"
+    return "localhost", 8000
+    # return "server:8000"
 
 
 def get_slaves_info():
