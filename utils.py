@@ -16,11 +16,11 @@ def get_chuck_info(dict):
     return namedtuple('ChunkInfo', dict.keys())(**dict)
 
 
-# def get_own_address():
+# def get_master_address():
 #     return "localhost:8000"
 #
 #
-# def get_servers_info():
+# def get_slaves_info():
 #     return [
 #         (1, "localhost:8001"),
 #         (2, "localhost:8002"),
@@ -29,18 +29,18 @@ def get_chuck_info(dict):
 #     ]
 
 
-def get_own_address():
-    return "server:8000"
+def get_master_address():
+    return "localhost", 8000
+    # return "server:8000"
 
 
-def get_servers_info():
+def get_slaves_info():
     return [
         (1, "node1:8001"),
         (2, "node2:8002"),
         (3, "node3:8003"),
         (4, "node4:8004")
     ]
-
 
 def write_output_result(self, path, result):
     result_path = self.root_directory + '/' + path
@@ -55,7 +55,6 @@ def get_file_content(self, path):
     with open(path, mode='r') as file:
         return file.read()
 
-
 class DirFileEnum:
     """
     Enum for provide info about path, is it directory, file, or neither
@@ -69,6 +68,7 @@ class FileInfo(object):
     """
     Helper for creating stubs of real DFS files at NamingServer's file system
     """
+
     def __init__(self, path, size, chunks_info_list):
         """
         :param path: path to file
@@ -103,6 +103,7 @@ class StorageServerInfo:
     """
     Helper object that represents particular StorageServer at NamingServer
     """
+
     def __init__(self, server_id, address):
         """
         :param server_id:
