@@ -219,7 +219,7 @@ class Slave:
 
 # address = sys.argv[1]
 # port = int(sys.argv[2])
-serv_addr_str = utils.get_own_address()
+serv_addr_str = utils.get_master_address()
 serv_addr = serv_addr_str.split(":")
 
 address = serv_addr[0]

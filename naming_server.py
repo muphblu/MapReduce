@@ -19,11 +19,11 @@ class NamingServer:
         self.repository_root = 'files/filesystem/'
 
         # Naming server configuration
-        address_str = utils.get_own_address()
+        address_str = utils.get_master_address()
         address = address_str.split(":")
         # Connection to storage servers
         self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in
-                                utils.get_servers_info()]
+                                utils.get_slaves_info()]
 
         # reset root filesystem directory
         if os.path.isdir(self.repository_root):
@@ -195,7 +195,7 @@ class NamingServer:
         Provides list of storage servers addresses for the client
         :return: list with tuples where first param is server id and second is server network address "127.0.0.1:8000"
         """
-        return utils.get_servers_info()
+        return utils.get_slaves_info()
 
     # ===============================
     # Job tracker
@@ -280,11 +280,11 @@ class NamingServer:
             for chunk in file_info.chunks:
                 print(chunk)
                 if chunk.main_server_id == server_id:
-                    new_server = (server_id + 1) % len(utils.get_servers_info()) + 1
+                    new_server = (server_id + 1) % len(utils.get_slaves_info()) + 1
                     while True:
-                        # new_server = (new_server + 1) % len(utils.get_servers_info())
+                        # new_server = (new_server + 1) % len(utils.get_slaves_info())
                         if new_server == chunk.replica_server_id:
-                            new_server = (new_server + 1) % len(utils.get_servers_info()) + 1
+                            new_server = (new_server + 1) % len(utils.get_slaves_info()) + 1
                             continue
                         else:
                             break
@@ -299,10 +299,10 @@ class NamingServer:
                         print("Error replication 1")
                         pass
                 elif chunk.replica_server_id == server_id:
-                    new_server = (server_id + 1) % len(utils.get_servers_info()) + 1
+                    new_server = (server_id + 1) % len(utils.get_slaves_info()) + 1
                     while True:
                         if new_server == chunk.main_server_id:
-                            new_server = (new_server + 1) % len(utils.get_servers_info()) + 1
+                            new_server = (new_server + 1) % len(utils.get_slaves_info()) + 1
                             continue
                         else:
                             break
