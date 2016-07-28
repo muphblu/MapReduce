@@ -78,6 +78,11 @@ class FileInfo(object):
             return pickle.load(file)
 
 
+class SlaveStatus(Enum):
+    Down = 0
+    Up = 1
+
+
 class StorageServerInfo:
     """
     Helper object that represents particular StorageServer at NamingServer
@@ -90,6 +95,7 @@ class StorageServerInfo:
         self.id = server_id
         self.address = address
         self.proxy = self.init_proxy()
+        self.status = SlaveStatus.Up
 
         # Helping structure to know which files stored on that server
         # contains only paths
