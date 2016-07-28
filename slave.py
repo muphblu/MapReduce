@@ -6,8 +6,6 @@ from threading import Thread
 
 import mapreduce
 import utils
-from mapper import Mapper
-from reducer import Reducer
 from storage_server import StorageServer
 from job import Job
 
@@ -31,10 +29,6 @@ class Slave:
         except WindowsError:
             print('Error in naming server')
             exit()
-
-        # Initializing mapper and reducer
-        self.mapper = Mapper()
-        self.reducer = Reducer()
 
         # Initializing a storage server. storage_id = [1, 4]
         self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))
@@ -178,6 +172,11 @@ class Slave:
         :return:
         """
         exec(job_content)
+        if map in job_content:
+            exec('start_mapper(' + file_content + ',' + info_content + ')')
+        else:
+            # TODO Add 3rd parameter words
+            exec('start_reducer(' + file_content + ',' + info_content + ',' + '\''')')
 
     # ===============================
     # Helpers
@@ -255,13 +254,9 @@ storage_id = int(sys.argv[3])
 
 client = Slave(address, port, storage_id)
 
-job_content = ''
-with open('mapper.py', mode='r') as file:
-    job_content = file.read()
 
-client.receive_the_job('', '', job_content)
 
-'''action = ''
+action = ''
 while action.lower() != 'stop':
     action = input("Input one of the following commands:: \n"
                    "Stop - Stop the client \n"
@@ -273,4 +268,4 @@ while action.lower() != 'stop':
                    "List(<directory>) - List files in a directory with sizes \n"
                    "Size(<path of a file>) - Size of a file \n"
                    "DoJob(<path of a file>) - Sends a job to job tracker \n")
-    client.handle_user_input(action)'''
+    client.handle_user_input(action)

@@ -5,7 +5,7 @@ import utils
 OUTPUT_FILE_PATH = 'mapper'
 
 
-def map(text):
+def start_mapper(file_content, info_content):
     result = []
     print('Mapper result: ')
     for line in text:
