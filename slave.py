@@ -154,10 +154,10 @@ class Slave:
         else:
             print('No file with such path')
 
-    def receive_the_job(self, job_content):
+    def receive_the_job(self, file_path, info, job_content):
         """
         Receive a job from job tracker to execute
-        :param path:
+        :param job_content:
         :return:
         """
         with open(self.job_content_path, mode='x') as file:
