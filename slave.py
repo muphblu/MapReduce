@@ -139,7 +139,6 @@ class Slave:
     # Communication with job tracker
     # ===============================
     job_content_path = 'job_content.py'
-    info_file_path = 'info.txt'
 
     def send_the_job(self, path):
         """
@@ -158,26 +157,24 @@ class Slave:
     def receive_the_job(self, file_path, info, job_content):
         """
         Receive a job from job tracker to execute
-        :param info: 
+        :param info:
         :param file_path:
         :param job_content:
         :return:
         """
-        # Writing an info file to info.txt
-        utils.write_content(self.info_file_path, info)
         with open(self.job_content_path, mode='x') as file:
             file.write(job_content)
         print("The job is received")
         file_content = self.read(file_path)
         print("Reading the file with path " + file_path)
-        self.exec_job(job_content, file_content)
+        self.exec_job(job_content, file_content, info)
 
-    def exec_job(self, job_content, file_content):
+    def exec_job(self, job_content, file_content, info_content):
         """
         Execute a file of a job
         :return:
         """
-        exec(open(job_content).read(), file_content)
+        exec(open(job_content).read(), file_content, info_content)
 
     # ===============================
     # Helpers
