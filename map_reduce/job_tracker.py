@@ -1,3 +1,6 @@
+# TODO create named tuple JobTrackerOptions for params
+
+
 class JobTracker:
     def __init__(self, options):
         pass
@@ -14,8 +17,8 @@ class JobTracker:
     def stop_job(self):
         pass
 
-    def man_up(self, id):
+    def man_up(self, server_id):
         pass
 
-    def man_down(self, id):
+    def man_down(self, server_id):
         pass

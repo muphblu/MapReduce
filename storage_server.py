@@ -19,7 +19,7 @@ class StorageServer:
         self.id = server_id
         self.root_directory = "storage" + str(self.id)
         self.other_servers = self.init_proxies(list(
-            filter(lambda server: server[0] != self.id, utils.get_servers_info())))
+            filter(lambda server: server[0] != self.id, utils.get_slaves_info())))
 
         # reset storage directory
         storage_path = 'files/storage' + str(server_id)
@@ -98,17 +98,18 @@ class StorageServer:
     def init_proxies(self, servers_to_connect):
         return list(map(lambda x: utils.StorageServerInfo(x[0], x[1]), servers_to_connect))
 
+
 def get_server_addr(server_id):
-    for x in utils.get_servers_info():
+    for x in utils.get_slaves_info():
         if x[0] == server_id:
             return x[1]
+
 
 server_id = 1
 if sys.argv[3] is not None:
     server_id = int(sys.argv[3])
 
-servers = utils.get_servers_info()
+servers = utils.get_slaves_info()
 addr_str = get_server_addr(server_id)
 address = addr_str.split(":")
 StorageServer(server_id, ("localhost", int(address[1])))
-
