@@ -263,19 +263,28 @@ class NamingServer:
     # Replication
     # ===============================
 
+    def handle_server_failure(self, server):
+        server.status = utils.SlaveStatus.Down
+        self.job_tracker_proxy.man_down(server.id)
+        self.replicate_from_server(server.id)
+
+    def set_slave_status_up(self, server):
+        # Notify Job Tracker if the server wend back online
+        if server.status == utils.SlaveStatus.Down:
+            self.job_tracker_proxy.man_up(server.id)
+            server.status = utils.SlaveStatus.Up
+
     def ping_echo_loop(self):
         while True:
             time.sleep(3)
             for server in self.storage_servers:
                 try:
-                    if not server.proxy.ping():
-                        self.handle_server_failure(server.id)
+                    if server.proxy.ping():
+                        self.set_slave_status_up(server)
+                    else:
+                        self.handle_server_failure(server)
                 except:
-                    self.handle_server_failure(server.id)
-
-    def handle_server_failure(self, server_id):
-        self.job_tracker_proxy.man_down(server_id)
-        self.replicate_from_server(server_id)
+                    self.handle_server_failure(server)
 
     def replicate_from_server(self, server_id):
         print('replicating ', server_id)
