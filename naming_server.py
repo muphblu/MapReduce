@@ -16,7 +16,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 class NamingServer:
     def __init__(self):
         """NamingServer"""
-        self.repository_root = 'filesystem/'
+        self.repository_root = 'files/filesystem/'
 
         # Naming server configuration
         address_str = utils.get_own_address()

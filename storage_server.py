@@ -22,7 +22,7 @@ class StorageServer:
             filter(lambda server: server[0] != self.id, utils.get_servers_info())))
 
         # reset storage directory
-        storage_path = 'storage' + str(server_id)
+        storage_path = 'files/storage' + str(server_id)
         if os.path.isdir(storage_path):
             shutil.rmtree(storage_path)
         time.sleep(1)
