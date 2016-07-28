@@ -158,6 +158,8 @@ class Slave:
     def receive_the_job(self, file_path, info, job_content):
         """
         Receive a job from job tracker to execute
+        :param info: 
+        :param file_path:
         :param job_content:
         :return:
         """
