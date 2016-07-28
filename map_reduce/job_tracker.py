@@ -13,3 +13,9 @@ class JobTracker:
 
     def stop_job(self):
         pass
+
+    def man_up(self, id):
+        pass
+
+    def man_down(self, id):
+        pass
