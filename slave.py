@@ -4,9 +4,8 @@ import xmlrpc.client
 import sys
 from threading import Thread
 
+import mapreduce
 import utils
-from mapper import Mapper
-from reducer import Reducer
 from storage_server import StorageServer
 from job import Job
 
@@ -30,10 +29,6 @@ class Slave:
         except WindowsError:
             print('Error in naming server')
             exit()
-
-        # Initializing mapper and reducer
-        self.mapper = Mapper()
-        self.reducer = Reducer()
 
         # Initializing a storage server. storage_id = [1, 4]
         self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))
@@ -146,15 +141,15 @@ class Slave:
         :param path:
         :return:
         """
-        mapper_content = utils.get_file_content(self.mapper.get_output_path())
-        reducer_content = utils.get_file_content(self.reducer.get_output_path())
+        mapper_content = mapreduce.get_map_code()
+        reducer_content = mapreduce.get_reducer_code()
         job = Job(path, mapper_content, reducer_content)
         if self.naming_server.receive_the_job(job):
             print('Job is received successfully')
         else:
             print('No file with such path')
 
-    def receive_the_job(self, file_path, info, job_content):
+    def start_map(self, file_path, info):
         """
         Receive a job from job tracker to execute
         :param info:
@@ -162,25 +157,18 @@ class Slave:
         :param job_content:
         :return:
         """
-        if os.path.exists(self.JOB_CONTENT_PATH):
-            os.remove(self.JOB_CONTENT_PATH)
-        with open(self.JOB_CONTENT_PATH, mode='x') as file:
-            file.write(job_content)
-        print("The job is received")
-
+        print("Map is received from JT")
         file_content = self.read(file_path)
         print("Reading the file with path " + file_path)
-        self.exec_job(self.JOB_CONTENT_PATH, file_content, info)
+        mapreduce.start_map(file_content, info)
 
-    def exec_job(self, job_content_path, file_content, info_content):
+    def start_reduce(self, words, info_content):
         """
         Execute a file of a job
-        :param job_content_path:
-        :param file_content:
         :param info_content:
         :return:
         """
-        os.system(job_content_path + ' ' + file_content + ' ' + info_content)
+        mapreduce.start_reduce(words, info_content)
 
     # ===============================
     # Helpers
@@ -258,13 +246,9 @@ storage_id = int(sys.argv[3])
 
 client = Slave(address, port, storage_id)
 
-job_content = ''
-with open('mapper.py', mode='r') as file:
-    job_content = file.read()
 
-client.receive_the_job('', '', job_content)
 
-'''action = ''
+action = ''
 while action.lower() != 'stop':
     action = input("Input one of the following commands:: \n"
                    "Stop - Stop the client \n"
@@ -276,4 +260,4 @@ while action.lower() != 'stop':
                    "List(<directory>) - List files in a directory with sizes \n"
                    "Size(<path of a file>) - Size of a file \n"
                    "DoJob(<path of a file>) - Sends a job to job tracker \n")
-    client.handle_user_input(action)'''
+    client.handle_user_input(action)
