@@ -9,6 +9,9 @@ class JobTracker:
         pass
 
     def startup(self):
+        config = utils.get_configuration()
+        config['mappers_num']
+        config['reducers_num']
         pass
 
     def shutdown(self):
@@ -31,4 +34,8 @@ class JobTracker:
         pass
 
     def man_down(self, server_id):
+        pass
+
+    def map_finished(self, server_id):
+        """Notification that map finished on particular server"""
         pass

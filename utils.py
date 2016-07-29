@@ -27,6 +27,8 @@ def get_chuck_info(dict):
 #         (3, "localhost:8003"),
 #         (4, "localhost:8004")
 #     ]
+def get_configuration():
+    return {"mappers_num": 2, "reducers_num": 2}
 
 
 def get_master_address():
