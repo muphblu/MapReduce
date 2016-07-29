@@ -100,6 +100,13 @@ class StorageServer:
     def init_proxies(self, servers_to_connect):
         return list(map(lambda x: utils.StorageServerInfo(x[0], x[1]), servers_to_connect))
 
+    # ===============================
+    # Getter for external classes
+    # ===============================
+    # Not used for now
+    def get_other_storage_proxies(self):
+        return self.other_servers
+
 
 def get_server_addr(server_id):
     for x in utils.get_slaves_info():
