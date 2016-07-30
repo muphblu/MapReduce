@@ -34,8 +34,10 @@ class Slave:
             exit()
 
         # Initializing a storage server. storage_id = [1, 4]
-        self.storage_server = StorageServer(storage_id, ('localhost', 8000 + storage_id))
-        Thread(target=self.storage_server.serve_forever).start()
+        slaves_info = utils.get_slaves_info()
+        this_slave_info = list(filter(lambda info: info[0] == storage_id, slaves_info))[0]
+
+        self.storage_server = StorageServer(storage_id, this_slave_info[1])
 
         self.jobber = Jobber(storage_id, self.naming_server)
 
@@ -45,12 +47,12 @@ class Slave:
         self.server.register_function(self.storage_server.delete, "delete")
         self.server.register_function(self.storage_server.replicate, "replicate")
         self.server.register_function(self.storage_server.ping, "ping")
-        self.server.register_function(self.storage_server.serve_forever, "serve_forever")
+        # self.server.register_function(self.storage_server.serve_forever, "serve_forever")
         self.server.register_function(get_mapped_file)
         self.server.register_function(self.jobber.init_mapper)
         self.server.register_function(self.jobber.init_reducer)
 
-        Thread(target=self.server.serve_forever).start()
+        self.start()
 
     def read(self, path):
         """
@@ -254,25 +256,31 @@ class Slave:
             path = user_input.split('(', 3)[1][:-1]
             self.send_the_job(path)
 
+    def start(self):
 
-master_addr = utils.get_master_address()
+        Thread(target=self.server.serve_forever).start()
 
-address = master_addr[0]
-port = master_addr[1]
-storage_id = int(sys.argv[3])
+        #
+        # master_addr = utils.get_master_address()
 
-client = Slave(address, port, storage_id)
+        # address = master_addr[0]
+        # port = master_addr[1]
+        # storage_id = int(sys.argv[3])
 
-action = ''
-while action.lower() != 'stop':
-    action = input("Input one of the following commands:: \n"
-                   "Stop - Stop the client \n"
-                   "Read(<path of a file>) - Read a file \n"
-                   "Write(<path of a file>) - Write\create a file \n"
-                   "Delete(<path of a file>) - Delete a file \n"
-                   "Mkdir(<path of a directory>) - Create a directory \n"
-                   "Rmdir(<path of a directory>) - Delete a file or a directory \n"
-                   "List(<directory>) - List files in a directory with sizes \n"
-                   "Size(<path of a file>) - Size of a file \n"
-                   "DoJob(<path of a file>) - Sends a job to job tracker \n")
-    client.handle_user_input(action)
+        # client = Slave(address, port, storage_id)
+
+        action = ''
+        while action.lower() != 'stop':
+            action = input("Input one of the following commands:: \n"
+                           "Stop - Stop the client \n"
+                           "Read(<path of a file>) - Read a file \n"
+                           "Write(<path of a file>) - Write\create a file \n"
+                           "Delete(<path of a file>) - Delete a file \n"
+                           "Mkdir(<path of a directory>) - Create a directory \n"
+                           "Rmdir(<path of a directory>) - Delete a file or a directory \n"
+                           "List(<directory>) - List files in a directory with sizes \n"
+                           "Size(<path of a file>) - Size of a file \n"
+                           "DoJob(<path of a file>) - Sends a job to job tracker \n")
+            self.handle_user_input(action)
+
+slave = Slave('localhost', 8001, 1)
