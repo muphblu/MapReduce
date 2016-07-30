@@ -46,6 +46,10 @@ def start_reduce(words, info_content=''):
     utils.write_content(REDUCE_OUTPUT_FILE_PATH, result)
 
 
+def split_into_words(string):
+    listed = string.alpha.split()
+
+
 def get_mapped_file(server_id):
     with open(str(server_id), 'r') as file:
         content = file.read()
@@ -58,12 +62,12 @@ class Jobber:
         self.master_proxy = master_proxy
         servers_info = utils.get_slaves_info()
         self.servers = [utils.StorageServerInfo(server[0], server[1]) for server in servers_info]
-        self.results = {}
+        self.map_results = {}
         # self.mapper_server = SimpleXMLRPCServer(self.address, logRequests=False, allow_none=True)
 
     def init_results_dict(self, info):
         for server_id in info:
-            self.results.setdefault(server_id, [])
+            self.map_results.setdefault(server_id, [])
             # todo form actual path to map results. Smth like "files/map_results/" + str(key)
             os.remove(server_id)
 
@@ -73,10 +77,10 @@ class Jobber:
         :param pair:
         :return:
         """
-        self.results[hash(pair[0]) % len(self.results)].append(pair)
+        self.map_results[hash(pair[0]) % len(self.map_results)].append(pair)
 
     def write_results_to_files(self):
-        for key, val in self.results:
+        for key, val in self.map_results:
             # todo form actual path to map results. Smth like "files/map_results/" + str(key)
             file = open(str(key), 'a')
             for pair in val:
