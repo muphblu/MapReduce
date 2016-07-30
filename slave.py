@@ -3,11 +3,14 @@ import xmlrpc.client
 
 import sys
 from threading import Thread
+from xmlrpc.server import SimpleXMLRPCServer
+from mapreduce import get_mapped_file
 
 import mapreduce
 import utils
 from storage_server import StorageServer
 from job import Job
+from mapreduce import Jobber
 
 
 class Slave:
@@ -32,7 +35,22 @@ class Slave:
 
         # Initializing a storage server. storage_id = [1, 4]
         self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))
-        Thread(target=self.storage_server.serve_forever).start()
+        # Thread(target=self.storage_server.serve_forever).start()
+
+        self.jobber = Jobber(storage_id)
+
+        self.server = SimpleXMLRPCServer(address, logRequests=False)
+        self.server.register_function(self.storage_server.read, "read")
+        self.server.register_function(self.storage_server.write, "write")
+        self.server.register_function(self.storage_server.delete, "delete")
+        self.server.register_function(self.storage_server.replicate, "replicate")
+        self.server.register_function(self.storage_server.ping, "ping")
+        self.server.register_function(self.storage_server.serve_forever, "serve_forever")
+        self.server.register_function(get_mapped_file)
+        self.server.register_function(self.jobber.init_mapper)
+        self.server.register_function(self.jobber.init_reducer)
+
+        self.server.serve_forever()
 
     def read(self, path):
         """
