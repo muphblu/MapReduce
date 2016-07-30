@@ -154,10 +154,9 @@ class Slave:
         Receive a job from job tracker to execute
         :param info:
         :param file_path:
-        :param job_content:
         :return:
         """
-        print("Map is received from JT")
+        print("Mapper is received from JT")
         file_content = self.read(file_path)
         print("Reading the file with path " + file_path)
         mapreduce.start_map(file_content, info)
@@ -165,9 +164,11 @@ class Slave:
     def start_reduce(self, words, info_content):
         """
         Execute a file of a job
+        :param words:
         :param info_content:
         :return:
         """
+        print("Reducer is received from JT")
         mapreduce.start_reduce(words, info_content)
 
     # ===============================
