@@ -35,7 +35,7 @@ class StorageServer:
         self.server.register_function(self.delete, "delete")
         self.server.register_function(self.replicate, "replicate")
         self.server.register_function(self.ping, "ping")
-        self.server.register_function(self.ping, "serve_forever")
+        self.server.register_function(self.serve_forever, "serve_forever")
         self.server.register_function(get_mapped_file)
 
     def serve_forever(self):

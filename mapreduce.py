@@ -9,6 +9,43 @@ MAP_OUTPUT_FILE_PATH = 'mapper'
 REDUCE_OUTPUT_FILE_PATH = 'reducer'
 
 
+def start_map(jobber, text):  # , info_content=''):
+    # result = []
+    print('Mapper result: ')
+    for line in text:
+        line = line.strip()
+        # remove the symbols: !"?,.:;
+        line = re.sub('[!"?,.:;]', "", line)
+        words = line.split(" ")
+        for w in words:
+            jobber.write_pair((w, 1))
+            # result.append((w, 1))
+            print('Mapper: ' + w + ':' + 1)
+    # utils.write_content(MAP_OUTPUT_FILE_PATH, result)
+    # return result
+
+
+# Input example words: [('Hello', 1), ('Hello', 1), ('World', 1)]
+def start_reduce(words, info_content=''):
+    sorted_words = sorted(words)
+    current_word = ""
+    result = []
+    values = []
+    for i in sorted_words:
+        if current_word != "" and i[0] != current_word:
+            print("Reducer result: %s | %d" % (current_word, sum(values)))
+            result.append((current_word, sum(values)))
+            values = []
+            current_word = i[0]
+            values.append(i[1])
+        elif i[0] == current_word or current_word == "":
+            current_word = i[0]
+            values.append(i[1])
+    print("Reducer result: %s | %d" % (current_word, sum(values)))
+    result.append((current_word, sum(values)))
+    utils.write_content(REDUCE_OUTPUT_FILE_PATH, result)
+
+
 def get_mapped_file(server_id):
     with open(str(server_id), 'r') as file:
         content = file.read()
@@ -76,40 +113,3 @@ class Jobber:
         for mapper in list_of_mappers:
             words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
         start_reduce(words)
-
-
-def start_map(jobber, text):  # , info_content=''):
-    # result = []
-    print('Mapper result: ')
-    for line in text:
-        line = line.strip()
-        # remove the symbols: !"?,.:;
-        line = re.sub('[!"?,.:;]', "", line)
-        words = line.split(" ")
-        for w in words:
-            jobber.write_pair((w, 1))
-            # result.append((w, 1))
-            print('Mapper: ' + w + ':' + 1)
-    # utils.write_content(MAP_OUTPUT_FILE_PATH, result)
-    # return result
-
-
-# Input example words: [('Hello', 1), ('Hello', 1), ('World', 1)]
-def start_reduce(words, info_content=''):
-    sorted_words = sorted(words)
-    current_word = ""
-    result = []
-    values = []
-    for i in sorted_words:
-        if current_word != "" and i[0] != current_word:
-            print("Reducer result: %s | %d" % (current_word, sum(values)))
-            result.append((current_word, sum(values)))
-            values = []
-            current_word = i[0]
-            values.append(i[1])
-        elif i[0] == current_word or current_word == "":
-            current_word = i[0]
-            values.append(i[1])
-    print("Reducer result: %s | %d" % (current_word, sum(values)))
-    result.append((current_word, sum(values)))
-    utils.write_content(REDUCE_OUTPUT_FILE_PATH, result)
