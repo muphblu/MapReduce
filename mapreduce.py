@@ -1,5 +1,7 @@
 import os
 import re
+from ast import literal_eval
+from threading import Thread
 
 import utils
 
@@ -14,7 +16,8 @@ def get_mapped_file(server_id):
 
 
 class Jobber:
-    def __init__(self):
+    def __init__(self, server_id):
+        self.server_id = server_id
         servers_info = utils.get_slaves_info()
         self.servers = [utils.StorageServerInfo(server[0], server[1]) for server in servers_info]
         self.results = {}
@@ -43,18 +46,35 @@ class Jobber:
             file.close()
 
     def init_mapper(self, chunk_info_list, func_content):
+        Thread(target=self.setup_mapper, args=(chunk_info_list, func_content)).start()
+
+    def setup_mapper(self, chunk_info_list, func_content):
         exec(func_content)
         for index in range(len(chunk_info_list)):
             chunk_info = utils.get_chuck_info(chunk_info_list[index])
-            main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
-            chunk_content = main_server.read(chunk_info.chunk_name)
+            main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.servers))[0][1]
+            chunk_content = main_server.proxy.read(chunk_info.chunk_name)
             start_map(self, chunk_content)
         self.write_results_to_files()
         # todo inform JT about finished map on this node
 
-    def init_reducer(self, list_of_mappers):
+    @staticmethod
+    def split_to_list(data):
+        result = []
+        for line in data.split("\n"):
+            if line is not "":
+                new_tuple = literal_eval(line)
+                result.append(new_tuple)
+        return result
+
+    def init_reducer(self, list_of_mappers, func_content):
+        Thread(target=self.setup_reducer, args=(list_of_mappers, func_content)).start()
+
+    def setup_reducer(self, list_of_mappers, func_content):
+        exec(func_content)
         words = []
-        # todo call mappers to get mapped file
+        for mapper in list_of_mappers:
+            words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
         start_reduce(words)
 
 
