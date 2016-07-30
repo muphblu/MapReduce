@@ -3,7 +3,7 @@ import utils
 
 
 class JobTracker:
-    def __init__(self, options):
+    def __init__(self):
         slaves_info = utils.get_slaves_info()
         self.slaves = [utils.StorageServerInfo(server[0], server[1]) for server in slaves_info]
         config = utils.get_configuration()
