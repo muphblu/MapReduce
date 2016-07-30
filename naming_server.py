@@ -10,12 +10,10 @@ import time
 
 import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
-from xmlrpc.server import SimpleXMLRPCServer
-from xmlrpc.client import ServerProxy
 
 
 class NamingServer:
-    def __init__(self, job_tracker_address):
+    def __init__(self):
         """NamingServer"""
         self.repository_root = 'files/filesystem/'
 
@@ -26,9 +24,6 @@ class NamingServer:
                                 utils.get_slaves_info()]
 
         # Connection to Job Tracker
-        # TODO remove this and use self.job_tracker.proxy instead, because can work without additional rpcconnection
-        # TODO another problem if there is an common rpc listener for 2 objects, they cannot call each other
-        self.job_tracker_proxy = ServerProxy('http://' + job_tracker_address[0] + ':' + str(job_tracker_address[1]))
         # reset root filesystem directory
         if os.path.isdir(self.repository_root):
             shutil.rmtree(self.repository_root)
@@ -255,13 +250,13 @@ class NamingServer:
 
     def handle_server_failure(self, server):
         server.status = utils.SlaveStatus.Down
-        self.job_tracker_proxy.man_down(server.id)
+        self.job_tracker.man_down(server.id)
         self.replicate_from_server(server.id)
 
     def set_slave_status_up(self, server):
         # Notify Job Tracker if the server wend back online
         if server.status == utils.SlaveStatus.Down:
-            self.job_tracker_proxy.man_up(server.id)
+            self.job_tracker.man_up(server.id)
             server.status = utils.SlaveStatus.Up
 
     def ping_echo_loop(self):
@@ -337,13 +332,3 @@ class NamingServer:
         # self.get_type('/r/file')
         # self.delete('/r/file')
         pass
-
-
-s = NamingServer()
-# s.write("lol.txt", 1024, 2)
-# s.delete("lol.txt")
-
-# if __name__ == '__main__':
-#     server = NamingServer()
-#     # testing here
-#     server.main('a')  # passing parameter that is not needed for now
