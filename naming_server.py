@@ -26,6 +26,8 @@ class NamingServer:
                                 utils.get_slaves_info()]
 
         # Connection to Job Tracker
+        # TODO remove this and use self.job_tracker.proxy instead, because can work without additional rpcconnection
+        # TODO another problem if there is an common rpc listener for 2 objects, they cannot call each other
         self.job_tracker_proxy = ServerProxy('http://' + job_tracker_address[0] + ':' + str(job_tracker_address[1]))
         # reset root filesystem directory
         if os.path.isdir(self.repository_root):
@@ -38,6 +40,11 @@ class NamingServer:
     # ===============================
     # NamingServer API
     # ===============================
+
+    def init_job_tracker(self, job_tracker):
+        self.job_tracker = job_tracker
+        pass
+
     def read(self, path):
         """
         Read file from DFS

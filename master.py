@@ -9,9 +9,11 @@ class Master:
     def __init__(self):
         self.naming_server = NamingServer()
         self.job_tracker = JobTracker()
+        # Pass links on objects
+        self.job_tracker.init_naming_server(self.naming_server)
+        self.naming_server.init_job_tracker(self.job_tracker)
 
         self.address = utils.get_master_address()
-
         self.server = SimpleXMLRPCServer(self.address, logRequests=False, allow_none=True)
 
         # registering functions
