@@ -34,12 +34,12 @@ class Slave:
             exit()
 
         # Initializing a storage server. storage_id = [1, 4]
-        self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))
-        # Thread(target=self.storage_server.serve_forever).start()
+        self.storage_server = StorageServer(storage_id, ('localhost', 8000 + storage_id))
+        Thread(target=self.storage_server.serve_forever).start()
 
         self.jobber = Jobber(storage_id, self.naming_server)
 
-        self.server = SimpleXMLRPCServer(address, logRequests=False)
+        self.server = SimpleXMLRPCServer((ip, port), logRequests=False)
         self.server.register_function(self.storage_server.read, "read")
         self.server.register_function(self.storage_server.write, "write")
         self.server.register_function(self.storage_server.delete, "delete")
@@ -50,7 +50,7 @@ class Slave:
         self.server.register_function(self.jobber.init_mapper)
         self.server.register_function(self.jobber.init_reducer)
 
-        self.server.serve_forever()
+        Thread(target=self.server.serve_forever).start()
 
     def read(self, path):
         """
@@ -255,17 +255,13 @@ class Slave:
             self.send_the_job(path)
 
 
+master_addr = utils.get_master_address()
 
-
-serv_addr = utils.get_master_address()
-
-address = serv_addr[0]
-port = serv_addr[1]
+address = master_addr[0]
+port = master_addr[1]
 storage_id = int(sys.argv[3])
 
 client = Slave(address, port, storage_id)
-
-
 
 action = ''
 while action.lower() != 'stop':
