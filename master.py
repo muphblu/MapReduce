@@ -34,6 +34,7 @@ class Master:
         self.server.register_function(self.job_tracker.stop_job)
         self.server.register_function(self.job_tracker.man_up)
         self.server.register_function(self.job_tracker.man_down)
+        self.server.register_function(self.job_tracker.map_finished)
 
         # Starting RPC server(should be last)
         self.server.serve_forever()

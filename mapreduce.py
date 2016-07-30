@@ -53,8 +53,9 @@ def get_mapped_file(server_id):
 
 
 class Jobber:
-    def __init__(self, server_id):
+    def __init__(self, server_id, master_proxy):
         self.server_id = server_id
+        self.master_proxy = master_proxy
         servers_info = utils.get_slaves_info()
         self.servers = [utils.StorageServerInfo(server[0], server[1]) for server in servers_info]
         self.results = {}
@@ -93,7 +94,7 @@ class Jobber:
             chunk_content = main_server.proxy.read(chunk_info.chunk_name)
             start_map(self, chunk_content)
         self.write_results_to_files()
-        # todo inform JT about finished map on this node
+        self.master_proxy.map_finished(self.server_id)
 
     @staticmethod
     def split_to_list(data):
@@ -113,3 +114,4 @@ class Jobber:
         for mapper in list_of_mappers:
             words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
         start_reduce(words)
+        # todo inform JT that reduce on thet node is finished

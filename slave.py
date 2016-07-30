@@ -37,7 +37,7 @@ class Slave:
         self.storage_server = StorageServer(storage_id, ("localhost", 8000 + storage_id))
         # Thread(target=self.storage_server.serve_forever).start()
 
-        self.jobber = Jobber(storage_id)
+        self.jobber = Jobber(storage_id, self.naming_server)
 
         self.server = SimpleXMLRPCServer(address, logRequests=False)
         self.server.register_function(self.storage_server.read, "read")
