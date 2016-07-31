@@ -8,7 +8,6 @@ from mapreduce import get_mapped_file
 import mapreduce
 import utils
 from storage_server import StorageServer
-from job import Job
 from mapreduce import Jobber
 
 
@@ -156,19 +155,16 @@ class Slave:
     # ===============================
     JOB_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + '\job_content.py'
 
-    def send_the_job(self, path):
+    def start_the_job(self, path):
         """
         Send a job to job tracker
         :param path:
         :return:
         """
-        mapper_content = mapreduce.get_map_code()
-        reducer_content = mapreduce.get_reducer_code()
-        job = Job(path, mapper_content, reducer_content)
-        if self.naming_server.receive_the_job(job):
-            print('Job is received successfully')
-        else:
-            print('No file with such path')
+        mapper_content = utils.get_map_code()
+        reducer_content = utils.get_reducer_code()
+        self.job_tracker.start_job(path, mapper_content, reducer_content)
+        print('Job is received successfully')
 
     def start_map(self, file_path, info):
         """
@@ -255,7 +251,7 @@ class Slave:
             self.delete_directory(path)
         elif 'dojob' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
-            self.send_the_job(path)
+            self.start_the_job(path)
 
     def start(self):
 

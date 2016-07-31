@@ -4,7 +4,6 @@ import os
 import shutil
 import uuid
 from threading import Thread
-from job import Job
 
 import time
 
@@ -16,6 +15,7 @@ class NamingServer:
     def __init__(self):
         """NamingServer"""
         self.repository_root = 'files/filesystem/'
+        self.job_tracker = ''
 
         # Naming server configuration
         address = utils.get_master_address()

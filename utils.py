@@ -3,6 +3,7 @@ import pickle
 from xmlrpc.client import ServerProxy
 from collections import namedtuple
 from enum import Enum
+import utils
 
 # Info about chunk:
 # :param chunk_position: number position in file
@@ -52,11 +53,23 @@ def write_content(self, path, content):
     print('The result is written to ' + full_path)
 
 
-def get_file_content(self, path):
+def get_file_content(path):
     if not os.path.exists(path):
         raise FileNotFoundError()
     with open(path, mode='r') as file:
         return file.read()
+
+
+MAPPER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + '\mapper_content.py'
+REDUCER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + r'\reducer_content.py'
+
+
+def get_map_code():
+    return utils.get_file_content(MAPPER_CONTENT_PATH)
+
+
+def get_reducer_code():
+    return utils.get_file_content(REDUCER_CONTENT_PATH)
 
 
 class DirFileEnum:
