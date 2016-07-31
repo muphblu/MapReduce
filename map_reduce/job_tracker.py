@@ -39,12 +39,13 @@ class JobTracker:
         chunks_info = self.naming_server.read(data_path)
         chunks_count = len(chunks_info)
         # chunks_per_mapper = chunks_count/self.mappers_num
-        chunks_for_mappers = [None] * self.mappers_num
+        chunks_for_mappers = [[]] * self.mappers_num
         for i in range(chunks_count):
             chunks_for_mappers[chunks_count % self.mappers_num].append(chunks_info[i])
 
+        reducers_ids = [x.id for x in self._get_reducer_servers()]
         for i in range(self.mappers_num):
-            mappers[i].proxy.init_mapper(chunks_for_mappers[i], map_function)
+            mappers[i].proxy.init_mapper(chunks_for_mappers[i], map_function, reducers_ids)
 
     def stop_job(self):
         pass
@@ -82,7 +83,7 @@ class JobTracker:
         """
         Starts reducers
         """
-        reducers = self._get_reducer_servers
+        reducers = self._get_reducer_servers()
         for reducer in reducers:
             reducer.proxy.init_reducer(self.mappers_status.keys())
 
