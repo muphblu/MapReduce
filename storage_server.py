@@ -28,24 +28,10 @@ class StorageServer:
             shutil.rmtree(storage_path)
         time.sleep(1)
         os.mkdir(storage_path)
-    #
-    #     self.server = SimpleXMLRPCServer(address, logRequests=False)
-    #     self.server.register_function(self.read, "read")
-    #     self.server.register_function(self.write, "write")
-    #     self.server.register_function(self.delete, "delete")
-    #     self.server.register_function(self.replicate, "replicate")
-    #     self.server.register_function(self.ping, "ping")
-    #     self.server.register_function(self.serve_forever, "serve_forever")
-    #     self.server.register_function(get_mapped_file)
-    #
-    # def serve_forever(self):
-    #     """
-    #     Starts a server
-    #     :return:
-    #     """
-    #     print('Storage server starts')
-    #     self.server.serve_forever()
 
+    # ==========================================
+    # RPC API
+    # ==========================================
     def read(self, chunk_name):
         """
         Reads chunk from the storage server.

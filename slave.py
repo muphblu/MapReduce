@@ -1,7 +1,6 @@
 import os
 import xmlrpc.client
 
-import sys
 from threading import Thread
 from xmlrpc.server import SimpleXMLRPCServer
 from mapreduce import get_mapped_file
@@ -47,13 +46,15 @@ class Slave:
         self.server.register_function(self.storage_server.delete, "delete")
         self.server.register_function(self.storage_server.replicate, "replicate")
         self.server.register_function(self.storage_server.ping, "ping")
-        # self.server.register_function(self.storage_server.serve_forever, "serve_forever")
         self.server.register_function(get_mapped_file)
         self.server.register_function(self.jobber.init_mapper)
         self.server.register_function(self.jobber.init_reducer)
 
         self.start()
 
+    # ==========================================
+    # Client API available for user
+    # ==========================================
     def read(self, path):
         """
         Read file from storage servers through path received by Naming Server
@@ -76,7 +77,7 @@ class Slave:
         Write file to storage servers through path received by Naming Server
         :param path: Path in FS from where to write
         """
-        chunks = self.get_chunks(content)
+        chunks = self._get_chunks(content)
         size = len(content)
         chunk_info_list = self.naming_server.write(path, size, len(chunks))
 
@@ -194,7 +195,7 @@ class Slave:
     # ===============================
     # Helpers
     # ===============================
-    def get_chunks(self, content):
+    def _get_chunks(self, content):
         """
         Return the number of chunks to write
         :param content: content of a file to write
@@ -220,7 +221,7 @@ class Slave:
                 break
         return result_chunks_content
 
-    def handle_user_input(self, user_input):
+    def _handle_user_input(self, user_input):
         """
         Handle user's input
         :param user_input: User's input through keyboard
@@ -281,6 +282,7 @@ class Slave:
                            "List(<directory>) - List files in a directory with sizes \n"
                            "Size(<path of a file>) - Size of a file \n"
                            "DoJob(<path of a file>) - Sends a job to job tracker \n")
-            self.handle_user_input(action)
+            self._handle_user_input(action)
+
 
 slave = Slave('localhost', 8001, 1)
