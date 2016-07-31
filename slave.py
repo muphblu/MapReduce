@@ -27,7 +27,7 @@ class Slave:
         try:
             master_address = utils.get_master_address();
             self.master = xmlrpc.client.ServerProxy('http://' + master_address[0] + ':' + str(master_address[1]))
-            print('Connection to naming server is established')
+            print('RPC for naming server is created')
         except WindowsError:
             print('Error in naming server')
             exit()
@@ -79,7 +79,7 @@ class Slave:
         """
         chunks = self._get_chunks(content)
         size = len(content)
-        chunk_info_list = self.master.naming_server.write(path, size, len(chunks))
+        chunk_info_list = self.master.write(path, size, len(chunks))
 
         # Sorting by chunk position
         chunk_info_list = sorted(chunk_info_list, key=lambda storage: storage['chunk_position'])
@@ -104,7 +104,7 @@ class Slave:
         :param path: Path in FS from where to delete
         :return:
         """
-        result = self.master.naming_server.delete(path)
+        result = self.master.delete(path)
         print(result)
 
     def create_directory(self, path):
@@ -113,7 +113,7 @@ class Slave:
         :param path: New directory path in FS
         :return:
         """
-        result = self.master.naming_server.mkdir(path)
+        result = self.master.mkdir(path)
         print(result)
 
     def delete_directory(self, path):
@@ -122,7 +122,7 @@ class Slave:
         :param path: Directory path in FS that is deleted
         :return: result string
         """
-        result = self.master.naming_server.rmdir(path)
+        result = self.master.rmdir(path)
         print(result)
 
     def size_query(self, path):
@@ -131,8 +131,8 @@ class Slave:
         :param path: Directory path in FS that is deleted
         :return:
         """
-        if self.master.naming_server.get_type(path) == utils.DirFileEnum.File:
-            return str(self.master.naming_server.size(path))
+        if self.master.get_type(path) == utils.DirFileEnum.File:
+            return str(self.master.size(path))
         else:
             return 'N/A'
 
@@ -142,7 +142,7 @@ class Slave:
         :param path: path to directory to list
         :return: return list of directories
         """
-        result = self.master.naming_server.list(path)
+        result = self.master.list(path)
         # This would print all the files and directories with sizes
         if isinstance(result, str):
             print(result)
@@ -164,7 +164,7 @@ class Slave:
         """
         mapper_content = utils.get_map_code()
         reducer_content = utils.get_reducer_code()
-        self.master.naming_server.job_tracker.start_job(path, mapper_content, reducer_content)
+        self.master.start_job(path, mapper_content, reducer_content)
         print('Job is received successfully')
 
     def start_map(self, file_path, info):
