@@ -48,15 +48,16 @@ class Slave:
         Read file from storage servers through path received by Naming Server
         :param path: Path in FS from where to read
         """
-        chunk_info_list = self.master.read(path)
-        if len(chunk_info_list) > 0:
-            file_content = ''
-            for index in range(len(chunk_info_list)):
-                chunk_info = utils.get_chuck_info(chunk_info_list[index])
-                #main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]
-                main_server = self.storage_servers[chunk_info.main_server_id]
-                file_content += main_server.proxy.read(chunk_info.chunk_name)
-        else:
+        try:
+            chunk_info_list = self.master.read(path)
+            if len(chunk_info_list) > 0:
+                file_content = ''
+                for index in range(len(chunk_info_list)):
+                    chunk_info = utils.get_chuck_info(chunk_info_list[index])
+                    #main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]
+                    main_server = self.storage_servers[chunk_info.main_server_id]
+                    file_content += main_server.proxy.read(chunk_info.chunk_name)
+        except:
             # If there are no such path in storages then output error
             file_content = self.ERROR_NO_PATH
         return file_content
