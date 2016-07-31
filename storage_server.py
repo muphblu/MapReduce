@@ -31,8 +31,8 @@ class StorageServer:
         time.sleep(1)
         os.mkdir(storage_path)
 
-        ip = slave_info.split(':')[0]
-        port = int(slave_info.split(':')[1])
+        ip = slave_info[0]
+        port = slave_info[1]
         self.storage_server = SimpleXMLRPCServer((ip, port), logRequests=False)
         self.storage_server.register_function(self.read, "read")
         self.storage_server.register_function(self.write, "write")

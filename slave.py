@@ -1,10 +1,6 @@
 import os
 import xmlrpc.client
 
-from threading import Thread
-from xmlrpc.server import SimpleXMLRPCServer
-from mapreduce import get_mapped_file
-
 import mapreduce
 import utils
 from storage_server import StorageServer
@@ -57,7 +53,8 @@ class Slave:
             file_content = ''
             for index in range(len(chunk_info_list)):
                 chunk_info = utils.get_chuck_info(chunk_info_list[index])
-                main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]
+                #main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]
+                main_server = self.storage_servers[chunk_info.main_server_id]
                 file_content += main_server.proxy.read(chunk_info.chunk_name)
         else:
             # If there are no such path in storages then output error
@@ -79,11 +76,13 @@ class Slave:
             for index in range(len(chunk_info_list)):
                 chunk_info = utils.get_chuck_info(chunk_info_list[index])
 
-                main_server = \
-                    list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]
+                '''main_server = \
+                    list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]'''
+                main_server = self.storage_servers[chunk_info.main_server_id]
                 main_server.proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
-                replica_server = \
-                    list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.storage_servers))[0][1]
+                ''' replica_server = \
+                    list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.storage_servers))[0][1]'''
+                replica_server = self.storage_servers[chunk_info.replica_server_id]
                 replica_server.proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
                 print(chunks[chunk_info.chunk_position] + ' is written to storages and replicated')
         else:
