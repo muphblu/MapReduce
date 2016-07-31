@@ -26,7 +26,6 @@ class Master:
         self.server.register_function(self.naming_server.rmdir)
         self.server.register_function(self.naming_server.get_type)
         self.server.register_function(self.naming_server.get_storages_info)
-        self.server.register_function(self.naming_server.receive_the_job)
 
         self.server.register_function(self.job_tracker.startup)
         self.server.register_function(self.job_tracker.shutdown)
