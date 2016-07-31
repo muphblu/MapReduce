@@ -20,16 +20,15 @@ class StorageServer:
         """
         self.id = server_id
         self.jobber = jobber
-        self.root_directory = "storage" + str(self.id)
+        self.root_directory = "files/storage" + str(server_id)
         self.other_servers = self.init_proxies(list(
             filter(lambda server: server[0] != self.id, utils.get_slaves_info())))
 
         # reset storage directory
-        storage_path = 'files/storage' + str(server_id)
-        if os.path.isdir(storage_path):
-            shutil.rmtree(storage_path)
+        if os.path.isdir(self.root_directory):
+            shutil.rmtree(self.root_directory)
         time.sleep(1)
-        os.mkdir(storage_path)
+        os.mkdir(self.root_directory)
 
         ip = slave_info[0]
         port = slave_info[1]
