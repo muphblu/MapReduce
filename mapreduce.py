@@ -10,7 +10,7 @@ REDUCE_OUTPUT_FILE_PATH = 'reducer'
 
 
 def start_map(jobber, text):  # , info_content=''):
-    # result = []
+    result = []
     print('Mapper result: ')
     for line in text:
         line = line.strip()
@@ -19,10 +19,10 @@ def start_map(jobber, text):  # , info_content=''):
         words = line.split(" ")
         for w in words:
             jobber.write_pair((w, 1))
-            # result.append((w, 1))
+            result.append((w, 1))
             print('Mapper: ' + w + ':' + 1)
-    # utils.write_content(MAP_OUTPUT_FILE_PATH, result)
-    # return result
+    utils.write_content(MAP_OUTPUT_FILE_PATH, result)
+    return result
 
 
 # Input example words: [('Hello', 1), ('Hello', 1), ('World', 1)]
