@@ -158,28 +158,6 @@ class Slave:
         self.master.start_job(path, mapper_content, reducer_content)
         print('Job is received successfully')
 
-    def start_map(self, file_path, info):
-        """
-        Receive a job from job tracker to execute
-        :param info:
-        :param file_path:
-        :return:
-        """
-        print("Mapper is received from JT")
-        file_content = self.read(file_path)
-        print("Reading the file with path " + file_path)
-        mapreduce.start_map(file_content, info)
-
-    def start_reduce(self, words, info_content):
-        """
-        Execute a file of a job
-        :param words:
-        :param info_content:
-        :return:
-        """
-        print("Reducer is received from JT")
-        mapreduce.start_reduce(words, info_content)
-
     # ===============================
     # Helpers
     # ===============================
