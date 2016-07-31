@@ -47,7 +47,7 @@ def start_reduce(words, info_content=''):
 
 
 def split_into_words(string):
-    listed = string.alpha.split()
+    return string.split()
 
 
 def get_mapped_file(server_id):
