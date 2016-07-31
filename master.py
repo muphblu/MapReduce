@@ -41,3 +41,4 @@ class Master:
 
 
 master = Master()
+master.start()

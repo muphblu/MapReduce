@@ -27,7 +27,7 @@ class Slave:
         try:
             master_address = utils.get_master_address()
             self.master = xmlrpc.client.ServerProxy('http://' + master_address[0] + ':' + str(master_address[1]))
-            print('RPC for naming server is created')
+            print('RPC for master is created')
         except WindowsError:
             print('Error in naming server')
             exit()
@@ -261,15 +261,6 @@ class Slave:
     def start(self):
 
         Thread(target=self.server.serve_forever).start()
-
-        #
-        # master_addr = utils.get_master_address()
-
-        # address = master_addr[0]
-        # port = master_addr[1]
-        # storage_id = int(sys.argv[3])
-
-        # client = Slave(address, port, storage_id)
 
         action = ''
         while action.lower() != 'stop':
