@@ -185,17 +185,6 @@ class NamingServer:
         return utils.get_slaves_info()
 
     # ===============================
-    # Job tracker
-    # ===============================
-    # TODO Implement
-    def receive_the_job(self, job):
-        job = job
-        if os.path.exists(job.get_file_path()):
-            return True
-        else:
-            return False
-
-    # ===============================
     # Helpers
     # ===============================
 
