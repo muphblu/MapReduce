@@ -22,7 +22,7 @@ class Slave:
     # ===============================
     # Client
     # ===============================
-    def __init__(self, ip, port, storage_id):
+    def __init__(self, storage_id):
         # Initializing a client
         try:
             master_address = utils.get_master_address()
@@ -38,23 +38,11 @@ class Slave:
 
         # Initializing a storage server. storage_id = [1, 4]
         slaves_info = utils.get_slaves_info()
-        this_slave_info = list(filter(lambda info: info[0] == storage_id, slaves_info))[0]
-
-        self.storage_server = StorageServer(storage_id, this_slave_info[1])
+        this_slave_info = slaves_info[storage_id - 1][1]
 
         self.jobber = Jobber(storage_id, self.master)
+        self.storage_server = StorageServer(storage_id, this_slave_info, self.jobber)
 
-        self.server = SimpleXMLRPCServer((ip, port), logRequests=False)
-        self.server.register_function(self.storage_server.read, "read")
-        self.server.register_function(self.storage_server.write, "write")
-        self.server.register_function(self.storage_server.delete, "delete")
-        self.server.register_function(self.storage_server.replicate, "replicate")
-        self.server.register_function(self.storage_server.ping, "ping")
-        self.server.register_function(get_mapped_file)
-        self.server.register_function(self.jobber.init_mapper)
-        self.server.register_function(self.jobber.init_reducer)
-
-        self.start()
 
     # ==========================================
     # Client API available for user
@@ -260,8 +248,6 @@ class Slave:
 
     def start(self):
 
-        Thread(target=self.server.serve_forever).start()
-
         action = ''
         while action.lower() != 'stop':
             action = input("Input one of the following commands:: \n"
@@ -275,6 +261,3 @@ class Slave:
                            "Size(<path of a file>) - Size of a file \n"
                            "DoJob(<path of a file>) - Sends a job to job tracker \n")
             self._handle_user_input(action)
-
-
-slave = Slave('localhost', 8001, 1)

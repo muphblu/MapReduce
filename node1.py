@@ -1,3 +1,4 @@
-from storage_server import StorageServer
+from slave import Slave
 
-StorageServer(1, ("localhost", 8001))
+slave = Slave(1)
+slave.start()

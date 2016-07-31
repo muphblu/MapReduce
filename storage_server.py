@@ -1,5 +1,6 @@
 import os
 import shutil
+from threading import Thread
 from xmlrpc.server import SimpleXMLRPCServer
 from mapreduce import get_mapped_file
 
@@ -11,13 +12,14 @@ import utils
 
 
 class StorageServer:
-    def __init__(self, server_id, address):
+    def __init__(self, server_id, slave_info, jobber):
         """
         Storage server class
         should be started in separate thread
         :param address: tuple with network address and port
         """
         self.id = server_id
+        self.jobber = jobber
         self.root_directory = "storage" + str(self.id)
         self.other_servers = self.init_proxies(list(
             filter(lambda server: server[0] != self.id, utils.get_slaves_info())))
@@ -28,6 +30,21 @@ class StorageServer:
             shutil.rmtree(storage_path)
         time.sleep(1)
         os.mkdir(storage_path)
+
+        ip = slave_info.split(':')[0]
+        port = int(slave_info.split(':')[1])
+        self.storage_server = SimpleXMLRPCServer((ip, port), logRequests=False)
+        self.storage_server.register_function(self.read, "read")
+        self.storage_server.register_function(self.write, "write")
+        self.storage_server.register_function(self.delete, "delete")
+        self.storage_server.register_function(self.replicate, "replicate")
+        self.storage_server.register_function(self.ping, "ping")
+        self.storage_server.register_function(get_mapped_file)
+        self.storage_server.register_function(self.jobber.init_mapper)
+        self.storage_server.register_function(self.jobber.init_reducer)
+
+        Thread(target=self.storage_server.serve_forever).start()
+        print('Storage server is started')
 
     # ==========================================
     # RPC API
