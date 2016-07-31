@@ -35,10 +35,11 @@ class Master:
         self.server.register_function(self.job_tracker.man_down)
         self.server.register_function(self.job_tracker.map_finished)
 
+        self.start()
+
     def start(self):
         # Starting RPC server(should be last)
         self.server.serve_forever()
 
 
 master = Master()
-master.start()

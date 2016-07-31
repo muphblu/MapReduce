@@ -1,7 +1,6 @@
 import os
 import xmlrpc.client
 
-import mapreduce
 import utils
 from storage_server import StorageServer
 from mapreduce import Jobber
@@ -38,6 +37,8 @@ class Slave:
 
         self.jobber = Jobber(storage_id, self.master)
         self.storage_server = StorageServer(storage_id, this_slave_info, self.jobber)
+
+        self.start()
 
 
     # ==========================================
