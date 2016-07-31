@@ -1,3 +1,5 @@
+import re
+
 import utils
 
 MAP_OUTPUT_FILE_PATH = 'mapper'
