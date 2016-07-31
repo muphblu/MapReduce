@@ -25,12 +25,16 @@ class Slave:
     def __init__(self, ip, port, storage_id):
         # Initializing a client
         try:
-            master_address = utils.get_master_address();
+            master_address = utils.get_master_address()
             self.master = xmlrpc.client.ServerProxy('http://' + master_address[0] + ':' + str(master_address[1]))
             print('Connection to naming server is established')
         except WindowsError:
             print('Error in naming server')
             exit()
+
+        # Connection to storage servers
+        self.storage_servers = [utils.StorageServerInfo(server_info[0], server_info[1]) for server_info in
+                                utils.get_slaves_info()]
 
         # Initializing a storage server. storage_id = [1, 4]
         slaves_info = utils.get_slaves_info()
@@ -65,11 +69,11 @@ class Slave:
             file_content = ''
             for index in range(len(chunk_info_list)):
                 chunk_info = utils.get_chuck_info(chunk_info_list[index])
-                main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
-                file_content += main_server.read(chunk_info.chunk_name)
+                main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]
+                file_content += main_server.proxy.read(chunk_info.chunk_name)
         else:
             # If there are no such path in storages then output error
-            file_content = self.error_no_path
+            file_content = self.ERROR_NO_PATH
         return file_content
 
     def write(self, path, content):
@@ -87,16 +91,16 @@ class Slave:
             for index in range(len(chunk_info_list)):
                 chunk_info = utils.get_chuck_info(chunk_info_list[index])
 
-                main_server_proxy = \
-                    list(filter(lambda x: x[0] == chunk_info.main_server_id, self.connected_storages))[0][1]
-                main_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
-                replica_server_proxy = \
-                    list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.connected_storages))[0][1]
-                replica_server_proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
+                main_server = \
+                    list(filter(lambda x: x[0] == chunk_info.main_server_id, self.storage_servers))[0][1]
+                main_server.proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
+                replica_server = \
+                    list(filter(lambda x: x[0] == chunk_info.replica_server_id, self.storage_servers))[0][1]
+                replica_server.proxy.write(chunk_info.chunk_name, chunks[chunk_info.chunk_position])
                 print(chunks[chunk_info.chunk_position] + ' is written to storages and replicated')
         else:
             # If there are no available storage then output ERROR
-            print(self.error_no_available_storage)
+            print(self.ERROR_NO_AVAILABLE_STORAGE)
 
     def delete_file(self, path):
         """
