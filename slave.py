@@ -235,6 +235,15 @@ class Slave:
             path = user_input.split('(', 3)[1][:-1]
             content = input("Input the content:")
             self.write(path, content)
+        elif 'write_from_file' in user_input.lower():
+            path = user_input.split('(', 3)[1][:-1]
+            file_path = input("Input the source file path:")
+            content = None
+            with open(file_path, mode='r') as file:
+                content = file.read()
+            if content is None:
+                raise FileNotFoundError
+            self.write(path, content)
         elif 'delete' in user_input.lower():
             path = user_input.split('(', 3)[1][:-1]
             self.delete_file(path)
