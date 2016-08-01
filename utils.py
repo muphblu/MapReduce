@@ -34,7 +34,7 @@ def get_configuration():
 
 def get_master_address():
     # return "localhost", 8000
-    return "server:8000"
+    return "server", 8000
 
 
 def get_slaves_info():
