@@ -6,6 +6,8 @@ from threading import Thread
 
 import sys
 
+import time
+
 MAP_OUTPUT_FILE_PATH = 'mapper/'
 REDUCE_OUTPUT_FILE_PATH = 'reducer/'
 
@@ -13,7 +15,7 @@ import utils
 
 
 def start_map(jobber, text):  # , info_content=''):
-    words = text.split('\W+')
+    words = re.split('\W+', text)
     for w in words:
         jobber.write_pair((w, 1))
 
@@ -24,7 +26,7 @@ def start_reduce(jobber, pairs, info_content=''):
     results_list = []
     for item in pairs:
         intermediate_results_dist.setdefault(item[0], []).append(item[1])
-    for key, val in intermediate_results_dist:
+    for key, val in intermediate_results_dist.items():
         word_count = 0
         for i in val:
             word_count += i
@@ -36,10 +38,7 @@ def split_into_words(string):
     return string.split()
 
 
-def get_mapped_file(server_id):
-    with open(str(server_id), 'r') as file:
-        content = file.read()
-    return Jobber.split_to_list(content)
+
 
 
 class Jobber:
@@ -47,8 +46,8 @@ class Jobber:
         self.server_id = server_id
         self.slave_directory_path = slave_directory_path
         self.slave = slave
-        self.mapper_directory_path = slave_directory_path + MAP_OUTPUT_FILE_PATH + '/'
-        self.reducer_directory_path = slave_directory_path + REDUCE_OUTPUT_FILE_PATH + '/'
+        self.mapper_directory_path = slave_directory_path + MAP_OUTPUT_FILE_PATH
+        self.reducer_directory_path = slave_directory_path + REDUCE_OUTPUT_FILE_PATH
         self.master_proxy = master_proxy
         servers_info = utils.get_slaves_info()
         self.servers = [utils.StorageServerInfo(server[0], server[1]) for server in servers_info]
@@ -56,6 +55,12 @@ class Jobber:
         self.reduce_results = []
         self.reducer_ids_list = []
         # self.mapper_server = SimpleXMLRPCServer(self.address, logRequests=False, allow_none=True)
+
+    def get_mapped_file(self, server_id):
+        mapped_file_path = self.mapper_directory_path + str(server_id)
+        with open(mapped_file_path, 'r') as file:
+            content = file.read()
+        return self.split_to_list(content)
 
     def init_mapper_results_dict(self, reducer_id_list):
         if not os.path.isdir(self.slave_directory_path):
@@ -124,6 +129,7 @@ class Jobber:
     def init_reducer_dir(self):
         if os.path.isdir(self.reducer_directory_path):
             shutil.rmtree(self.reducer_directory_path)
+            time.sleep(1)
         os.mkdir(self.reducer_directory_path)
 
     def init_reducer(self, list_of_mappers, func_content):

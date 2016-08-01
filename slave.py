@@ -6,7 +6,6 @@ from xmlrpc.server import SimpleXMLRPCServer
 
 import sys
 
-from mapreduce import get_mapped_file
 from mapreduce import MAP_OUTPUT_FILE_PATH
 from mapreduce import REDUCE_OUTPUT_FILE_PATH
 
@@ -62,7 +61,7 @@ class Slave:
         self.server.register_function(self.storage_server.delete, "delete")
         self.server.register_function(self.storage_server.replicate, "replicate")
         self.server.register_function(self.storage_server.ping, "ping")
-        self.server.register_function(get_mapped_file)
+        self.server.register_function(self.jobber.get_mapped_file)
         self.server.register_function(self.jobber.init_mapper)
         self.server.register_function(self.jobber.init_reducer)
 

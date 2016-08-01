@@ -14,6 +14,7 @@ from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
 FILES_ROOT = 'files/'
 NAMING_REPOSITORY_ROOT = FILES_ROOT + 'filesystem/'
 
+
 class NamingServer:
     def __init__(self):
         """NamingServer"""

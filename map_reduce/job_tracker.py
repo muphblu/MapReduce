@@ -116,7 +116,7 @@ class JobTracker:
         reducers = self._get_reducer_servers()
         self.reducers_status = {reducer.id: False for reducer in reducers}
         for reducer in reducers:
-            reducer.proxy.init_reducer(list(self.mappers_status.keys()))
+            reducer.proxy.init_reducer(list(self.mappers_status.keys()), self.reduce_fun)
 
     def _get_mapper_servers(self):
         """

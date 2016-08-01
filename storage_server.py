@@ -2,7 +2,6 @@ import os
 import shutil
 from threading import Thread
 from xmlrpc.server import SimpleXMLRPCServer
-from mapreduce import get_mapped_file
 
 import time
 
