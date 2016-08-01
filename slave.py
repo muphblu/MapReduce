@@ -278,5 +278,6 @@ class Slave:
                            "Rmdir(<path of a directory>) - Delete a file or a directory \n"
                            "List(<directory>) - List files in a directory with sizes \n"
                            "Size(<path of a file>) - Size of a file \n"
-                           "DoJob(<path of a file>) - Sends a job to job tracker \n")
+                           "DoJob(<path of a file>) - Sends a job to job tracker \n"
+                           "Writef(<path of a file>) - Write\create a file from existing file\n")
             self._handle_user_input(action)
