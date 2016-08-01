@@ -2,7 +2,7 @@ FROM python
 RUN mkdir -p /src/ga1
 RUN mkdir -p /files
 RUN mkdir -p /src/ga1/map_reduce
-COPY map_reduce/job_tracker.py /src/ga1/map_reduce/job_tracker.py
+COPY job_tracker.py /src/ga1/job_tracker.py
 COPY mapper_content.py /src/ga1/
 COPY mapreduce.py /src/ga1/
 COPY master.py /src/ga1/
