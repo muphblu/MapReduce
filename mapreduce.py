@@ -147,5 +147,6 @@ class Jobber:
             # words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
         start_reduce(self, words)
         self.write_reduce_results_to_file()
+        self.write_reduce_results_to_dfs()
         self.master_proxy.reduce_finished(self.server_id,
                                           'files/slave_' + str(self.server_id) + '/reducer/results')
