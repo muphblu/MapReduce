@@ -1,9 +1,22 @@
 import os
 import xmlrpc.client
 
+from threading import Thread
+from xmlrpc.server import SimpleXMLRPCServer
+
+import sys
+
+from mapreduce import get_mapped_file
+
+import mapreduce
 import utils
 from storage_server import StorageServer
 from mapreduce import Jobber
+from master import FILES_ROOT
+
+SLAVE_GENERAL_DIRECTORY_NAME = FILES_ROOT + 'slave_'
+MAP_OUTPUT_FILE_PATH = 'mapper/'
+REDUCE_OUTPUT_FILE_PATH = 'reducer/'
 
 
 class Slave:
@@ -18,6 +31,11 @@ class Slave:
     # Client
     # ===============================
     def __init__(self, storage_id):
+        # After initialization this will be /files/slave_{storage_id}
+        self.slave_directory_path = ''
+        # Init slave files structure
+        self.init_slave_files_structure(storage_id)
+
         # Initializing a client
         try:
             master_address = utils.get_master_address()
@@ -35,11 +53,27 @@ class Slave:
         slaves_info = utils.get_slaves_info()
         this_slave_info = slaves_info[storage_id - 1][1]
 
-        self.jobber = Jobber(storage_id, self.master)
         self.storage_server = StorageServer(storage_id, this_slave_info, self.jobber)
+        self.jobber = Jobber(self, storage_id, self.master, self.slave_directory_path)
+
+        self.server = SimpleXMLRPCServer((this_slave_info[0], this_slave_info[1]), logRequests=False)
+        self.server.register_function(self.storage_server.read, "read")
+        self.server.register_function(self.storage_server.write, "write")
+        self.server.register_function(self.storage_server.delete, "delete")
+        self.server.register_function(self.storage_server.replicate, "replicate")
+        self.server.register_function(self.storage_server.ping, "ping")
+        self.server.register_function(get_mapped_file)
+        self.server.register_function(self.jobber.init_mapper)
+        self.server.register_function(self.jobber.init_reducer)
 
         self.start()
 
+    def init_slave_files_structure(self, slave_id):
+        self.slave_directory_path = SLAVE_GENERAL_DIRECTORY_NAME + str(slave_id) + '/'
+        if not os.path.isdir(FILES_ROOT):
+            sys.exit('No root directory [' + FILES_ROOT + '], please create it first')
+        if not os.path.isdir(self.slave_directory_path):
+            os.mkdir(self.slave_directory_path)
 
     # ==========================================
     # Client API available for user

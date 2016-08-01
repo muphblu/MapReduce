@@ -1,12 +1,22 @@
-from xmlrpc.server import SimpleXMLRPCServer
-
+import os
+import shutil
+import time
+import sys
 import utils
 from map_reduce.job_tracker import JobTracker
 from naming_server import NamingServer
+from xmlrpc.server import SimpleXMLRPCServer
+
+
+FILES_ROOT = 'files/'
+NAMING_REPOSITORY_ROOT = FILES_ROOT + 'filesystem/'
 
 
 class Master:
     def __init__(self):
+        # Init master files structure
+        self.init_master_files_structure()
+
         self.naming_server = NamingServer()
         self.job_tracker = JobTracker()
         # Pass links on objects
@@ -39,6 +49,17 @@ class Master:
         self.server.register_function(self.job_tracker.get_results)
 
         self.start()
+
+    @staticmethod
+    def init_master_files_structure():
+        if not os.path.isdir(FILES_ROOT):
+            sys.exit('No root directory [' + FILES_ROOT + '], please create it first')
+
+        # reset root filesystem directory
+        if os.path.isdir(NAMING_REPOSITORY_ROOT):
+            shutil.rmtree(NAMING_REPOSITORY_ROOT)
+        time.sleep(1)
+        os.mkdir(NAMING_REPOSITORY_ROOT)
 
     def start(self):
         # Starting RPC server(should be last)
