@@ -4,12 +4,13 @@ import utils
 
 class JobTracker:
     def __init__(self):
+        self.results = []
         slaves_info = utils.get_slaves_info()
         self.slaves = [utils.StorageServerInfo(server[0], server[1]) for server in slaves_info]
         config = utils.get_configuration()
         self.mappers_num = config['mappers_num']
         self.reducers_num = config['reducers_num']
-        pass
+        self.is_job_finished = False
 
     # ==========================================
     # API
@@ -33,9 +34,13 @@ class JobTracker:
         :param map_function: mapper function in str
         :param reduce_function: reducer function in str
         """
+        self.is_job_finished = False
+        self.results.clear()
         self.reduce_fun = reduce_function
+
         mappers = self._get_mapper_servers()
         self.mappers_status = {mapper.id: False for mapper in mappers}
+
         chunks_info = self.naming_server.read(data_path)
         chunks_count = len(chunks_info)
         # chunks_per_mapper = chunks_count/self.mappers_num
@@ -76,6 +81,20 @@ class JobTracker:
                 return
         self._start_reducers()
 
+    def reduce_finished(self, server_id, reduced_file_path):
+        """
+        Notification from reducer that it finished his work
+        :param server_id: server id of reducer
+        :param reduced_file_path: result file path in DFS
+        """
+        self.results.append(reduced_file_path)
+        self.reducers_status[server_id] = True
+        for reducer in self.reducers_status.items():
+            if not reducer[1]:
+                return
+        self._process_results()
+        pass
+
     # ==========================================
     # Private
     # ==========================================
@@ -84,6 +103,7 @@ class JobTracker:
         Starts reducers
         """
         reducers = self._get_reducer_servers()
+        self.reducers_status = {reducer.id: False for reducer in reducers}
         for reducer in reducers:
             reducer.proxy.init_reducer(self.mappers_status.keys())
 
@@ -98,3 +118,17 @@ class JobTracker:
         :return: List of servers which should be reducers
         """
         return self.slaves[self.mappers_num:self.mappers_num + self.reducers_num]
+
+    def _process_results(self):
+        self.is_job_finished = True
+        pass
+
+    def check_job_status(self):
+        """Return status of the job"""
+        return self.is_job_finished
+
+    def get_results(self):
+        """Returns list of result files paths in dfs"""
+        if self.is_job_finished:
+            return self.results
+        return None

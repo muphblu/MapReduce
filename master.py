@@ -34,6 +34,9 @@ class Master:
         self.server.register_function(self.job_tracker.man_up)
         self.server.register_function(self.job_tracker.man_down)
         self.server.register_function(self.job_tracker.map_finished)
+        self.server.register_function(self.job_tracker.reduce_finished)
+        self.server.register_function(self.job_tracker.check_job_status)
+        self.server.register_function(self.job_tracker.get_results)
 
         self.start()
 
