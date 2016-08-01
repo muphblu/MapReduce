@@ -9,25 +9,18 @@ import time
 
 import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
+from master import NAMING_REPOSITORY_ROOT
 
 
 class NamingServer:
     def __init__(self):
         """NamingServer"""
-        self.repository_root = 'files/filesystem/'
 
         # Naming server configuration
         address = utils.get_master_address()
         # Connection to storage servers
         self.storage_servers = [StorageServerInfo(server_info[0], server_info[1]) for server_info in
                                 utils.get_slaves_info()]
-
-        # Connection to Job Tracker
-        # reset root filesystem directory
-        if os.path.isdir(self.repository_root):
-            shutil.rmtree(self.repository_root)
-        time.sleep(1)
-        os.mkdir(self.repository_root)
 
         Thread(target=self.ping_echo_loop).start()
 
@@ -45,7 +38,7 @@ class NamingServer:
         :param path: Path in FS from where to read
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
-        total_path = self.repository_root + path
+        total_path = NAMING_REPOSITORY_ROOT + path
         return self.serialize_chunk_info(FileInfo.get_file_info(total_path).chunks)
 
     def write(self, path, size, count_chunks):
@@ -56,7 +49,7 @@ class NamingServer:
         :param count_chunks: Number of chunks to write
         :return: ordered list of named tuples type of utils.ChunkInfo
         """
-        total_path = self.repository_root + path
+        total_path = NAMING_REPOSITORY_ROOT + path
         chunk_info_list = [self.generate_chunk_info(chunk_number) for chunk_number in
                            range(0, count_chunks)]
 
@@ -72,7 +65,7 @@ class NamingServer:
         :return: ?
         """
         # TODO think whether we should return something or client should handle exceptions thrown here
-        total_path = self.repository_root + path
+        total_path = NAMING_REPOSITORY_ROOT + path
         if os.path.isfile(total_path):
             file_info = FileInfo.get_file_info(total_path)
             for chunk in file_info.chunks:
@@ -101,7 +94,7 @@ class NamingServer:
         :param path: path to file
         :return: size
         """
-        total_path = self.repository_root + path
+        total_path = NAMING_REPOSITORY_ROOT + path
         file_info = FileInfo.get_file_info(total_path)
         return file_info.size
 
@@ -111,7 +104,7 @@ class NamingServer:
         :param path: path to directory
         :return: list of strings with names of files and directories in path
         """
-        dir_path = self.repository_root + path
+        dir_path = NAMING_REPOSITORY_ROOT + path
         try:
             return os.listdir(dir_path)
         except FileNotFoundError:
@@ -131,7 +124,7 @@ class NamingServer:
         :return: result of operation
         """
         # check here the correctness of the path
-        dir_path = self.repository_root + path
+        dir_path = NAMING_REPOSITORY_ROOT + path
         print(dir_path)  # debug print
         try:
             os.makedirs(dir_path)
@@ -148,7 +141,7 @@ class NamingServer:
         :param path: path to directory to remove
         :return: result of operation
         """
-        dir_path = self.repository_root + path
+        dir_path = NAMING_REPOSITORY_ROOT + path
         try:
             os.rmdir(dir_path)
             result = 'success'
@@ -166,7 +159,7 @@ class NamingServer:
         :param path: path to object
         :return: utils.DirFileEnum
         """
-        total_path = self.repository_root + path
+        total_path = NAMING_REPOSITORY_ROOT + path
         if os.path.isfile(total_path):
             # print('It is file')
             return DirFileEnum.File
