@@ -52,7 +52,7 @@ class Slave:
         slaves_info = utils.get_slaves_info()
         this_slave_info = slaves_info[storage_id - 1][1]
 
-        self.jobber = Jobber(self, storage_id, self.master, self.slave_directory_path)
+        self.jobber = Jobber(self, storage_id, master_address, self.slave_directory_path)
         self.storage_server = StorageServer(storage_id, this_slave_info, self.jobber)
 
         self.server = SimpleXMLRPCServer((this_slave_info[0], this_slave_info[1]), logRequests=False, allow_none=True)

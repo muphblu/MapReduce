@@ -1,8 +1,10 @@
 import os
 import re
 import shutil
+import hashlib
 from ast import literal_eval
 from threading import Thread
+import xmlrpc.client
 
 import sys
 
@@ -30,8 +32,8 @@ def start_reduce(jobber, pairs, info_content=''):
         word_count = 0
         for i in val:
             word_count += i
-        results_list.append((key, word_count))
-    jobber.reduce_results = results_list
+        jobber.reduce_results.append((key, word_count))
+    # jobber.reduce_results = results_list
 
 
 def split_into_words(string):
@@ -42,13 +44,13 @@ def split_into_words(string):
 
 
 class Jobber:
-    def __init__(self, slave, server_id, master_proxy, slave_directory_path):
+    def __init__(self, slave, server_id, master_address, slave_directory_path):
         self.server_id = server_id
         self.slave_directory_path = slave_directory_path
         self.slave = slave
         self.mapper_directory_path = slave_directory_path + MAP_OUTPUT_FILE_PATH
         self.reducer_directory_path = slave_directory_path + REDUCE_OUTPUT_FILE_PATH
-        self.master_proxy = master_proxy
+        self.master_proxy = xmlrpc.client.ServerProxy('http://' + master_address[0] + ':' + str(master_address[1]))
         servers_info = utils.get_slaves_info()
         self.servers = [utils.StorageServerInfo(server[0], server[1]) for server in servers_info]
         self.map_results = {}
@@ -68,6 +70,7 @@ class Jobber:
 
         if os.path.isdir(self.mapper_directory_path):
             shutil.rmtree(self.mapper_directory_path)
+            time.sleep(1)
         os.mkdir(self.mapper_directory_path)
 
         for server_id in reducer_id_list:
@@ -82,7 +85,9 @@ class Jobber:
         :param pair:
         :return:
         """
-        self.map_results[self.reducer_ids_list[hash(pair[0]) % len(self.map_results)]].append(pair)
+        s = pair[0].encode('utf-8')
+        reducer_index = int(hashlib.sha1(s).hexdigest(), 16) % len(self.map_results)
+        self.map_results[self.reducer_ids_list[reducer_index]].append(pair)
 
     def write_results_to_files(self):
         for key, val in self.map_results.items():
@@ -141,7 +146,7 @@ class Jobber:
         words = []
         for mapper_id in list_of_mappers:
             mapper = list(filter(lambda x: x.id == mapper_id, self.servers))[0]
-            words = mapper.proxy.get_mapped_file(self.server_id)
+            words.extend(mapper.proxy.get_mapped_file(self.server_id))
             # words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
         start_reduce(self, words)
         self.write_reduce_results_to_file()

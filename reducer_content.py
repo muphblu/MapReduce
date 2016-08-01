@@ -8,5 +8,5 @@ def start_reduce(jobber, pairs, info_content=''):
         word_count = 0
         for i in val:
             word_count += i
-        results_list.append((key, word_count))
-    jobber.reduce_results = results_list
+        jobber.reduce_results.append((key, word_count))
+    # jobber.reduce_results = results_list
