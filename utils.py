@@ -66,8 +66,8 @@ def get_file_content(path):
         return file.read()
 
 
-MAPPER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + '\mapper_content.py'
-REDUCER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + r'\reducer_content.py'
+MAPPER_CONTENT_PATH = os.path.dirname(os.path.abspath(__file__)) + '/mapper_content.py'
+REDUCER_CONTENT_PATH = os.path.dirname(os.path.abspath(__file__)) + '/reducer_content.py'
 
 
 def get_map_code():
