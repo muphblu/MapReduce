@@ -33,23 +33,23 @@ def get_configuration():
 
 
 def get_master_address():
-    return "localhost", 8000
-    # return "server:8000"
+    # return "localhost", 8000
+    return "server:8000"
 
 
 def get_slaves_info():
+    # return [
+    #     (1, ('localhost', 8001)),
+    #     (2, ('localhost', 8002)),
+    #     (3, ('localhost', 8003)),
+    #     (4, ('localhost', 8004))
+    # ]
     return [
-        (1, ('localhost', 8001)),
-        (2, ('localhost', 8002)),
-        (3, ('localhost', 8003)),
-        (4, ('localhost', 8004))
-    ]
-    '''return [
         (1, ('node1', 8001)),
         (2, ('node2', 8002)),
         (3, ('node3', 8003)),
         (4, ('node4', 8004))
-    ]'''
+    ]
 
 
 def write_content(self, path, content):
