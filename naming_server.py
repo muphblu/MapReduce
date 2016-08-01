@@ -9,8 +9,10 @@ import time
 
 import utils
 from utils import FileInfo, ChunkInfo, DirFileEnum, StorageServerInfo
-from master import NAMING_REPOSITORY_ROOT
+# from master import NAMING_REPOSITORY_ROOT
 
+FILES_ROOT = 'files/'
+NAMING_REPOSITORY_ROOT = FILES_ROOT + 'filesystem/'
 
 class NamingServer:
     def __init__(self):

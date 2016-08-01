@@ -30,19 +30,19 @@ class StorageServer:
         time.sleep(1)
         os.mkdir(self.root_directory)
 
-        ip = slave_info[0]
-        port = slave_info[1]
-        self.storage_server = SimpleXMLRPCServer((ip, port), logRequests=False)
-        self.storage_server.register_function(self.read, "read")
-        self.storage_server.register_function(self.write, "write")
-        self.storage_server.register_function(self.delete, "delete")
-        self.storage_server.register_function(self.replicate, "replicate")
-        self.storage_server.register_function(self.ping, "ping")
-        self.storage_server.register_function(get_mapped_file)
-        self.storage_server.register_function(self.jobber.init_mapper)
-        self.storage_server.register_function(self.jobber.init_reducer)
-
-        Thread(target=self.storage_server.serve_forever).start()
+        # ip = slave_info[0]
+        # port = slave_info[1]
+        # self.storage_server = SimpleXMLRPCServer((ip, port), logRequests=False)
+        # self.storage_server.register_function(self.read, "read")
+        # self.storage_server.register_function(self.write, "write")
+        # self.storage_server.register_function(self.delete, "delete")
+        # self.storage_server.register_function(self.replicate, "replicate")
+        # self.storage_server.register_function(self.ping, "ping")
+        # self.storage_server.register_function(get_mapped_file)
+        # self.storage_server.register_function(self.jobber.init_mapper)
+        # self.storage_server.register_function(self.jobber.init_reducer)
+        #
+        # Thread(target=self.storage_server.serve_forever).start()
         print('Storage server is started')
 
     # ==========================================

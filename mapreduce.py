@@ -6,9 +6,8 @@ from threading import Thread
 
 import sys
 
-from slave import MAP_OUTPUT_FILE_PATH
-from slave import REDUCE_OUTPUT_FILE_PATH
-from slave import SLAVE_GENERAL_DIRECTORY_NAME
+MAP_OUTPUT_FILE_PATH = 'mapper/'
+REDUCE_OUTPUT_FILE_PATH = 'reducer/'
 
 import utils
 
@@ -40,7 +39,7 @@ def split_into_words(string):
 def get_mapped_file(server_id):
     with open(str(server_id), 'r') as file:
         content = file.read()
-    return content
+    return Jobber.split_to_list(content)
 
 
 class Jobber:
@@ -55,6 +54,7 @@ class Jobber:
         self.servers = [utils.StorageServerInfo(server[0], server[1]) for server in servers_info]
         self.map_results = {}
         self.reduce_results = []
+        self.reducer_ids_list = []
         # self.mapper_server = SimpleXMLRPCServer(self.address, logRequests=False, allow_none=True)
 
     def init_mapper_results_dict(self, reducer_id_list):
@@ -77,11 +77,11 @@ class Jobber:
         :param pair:
         :return:
         """
-        self.map_results[hash(pair[0]) % len(self.map_results)].append(pair)
+        self.map_results[self.reducer_ids_list[hash(pair[0]) % len(self.map_results)]].append(pair)
 
     def write_results_to_files(self):
-        for key, val in self.map_results:
-            file = open(str(self.mapper_directory_path + key), 'a')
+        for key, val in self.map_results.items():
+            file = open(str(self.mapper_directory_path + str(key)), 'a')
             for pair in val:
                 file.write('%s\n' % str(pair))
             file.close()
@@ -91,10 +91,11 @@ class Jobber:
 
     def setup_mapper(self, chunk_info_list, func_content, list_of_reducer_ids):
         self.init_mapper_results_dict(list_of_reducer_ids)
+        self.reducer_ids_list = list_of_reducer_ids
         exec(func_content)
         for index in range(len(chunk_info_list)):
             chunk_info = utils.get_chuck_info(chunk_info_list[index])
-            main_server = list(filter(lambda x: x[0] == chunk_info.main_server_id, self.servers))[0][1]
+            main_server = list(filter(lambda x: x.id == chunk_info.main_server_id, self.servers))[0]
             chunk_content = main_server.proxy.read(chunk_info.chunk_name)
             start_map(self, chunk_content)
         self.write_results_to_files()
@@ -132,8 +133,10 @@ class Jobber:
         self.init_reducer_dir()
         exec(func_content)
         words = []
-        for mapper in list_of_mappers:
-            words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
+        for mapper_id in list_of_mappers:
+            mapper = list(filter(lambda x: x.id == mapper_id, self.servers))[0]
+            words = mapper.proxy.get_mapped_file(self.server_id)
+            # words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
         start_reduce(self, words)
         self.write_reduce_results_to_file()
         self.master_proxy.reduce_finished(self.server_id, 'results/result_' + str(self.server_id))

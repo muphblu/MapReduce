@@ -5,11 +5,10 @@ import sys
 import utils
 from map_reduce.job_tracker import JobTracker
 from naming_server import NamingServer
+from naming_server import FILES_ROOT
+from naming_server import NAMING_REPOSITORY_ROOT
 from xmlrpc.server import SimpleXMLRPCServer
 
-
-FILES_ROOT = 'files/'
-NAMING_REPOSITORY_ROOT = FILES_ROOT + 'filesystem/'
 
 
 class Master:
@@ -65,5 +64,5 @@ class Master:
         # Starting RPC server(should be last)
         self.server.serve_forever()
 
-
-master = Master()
+if __name__ == "__main__":
+    master = Master()

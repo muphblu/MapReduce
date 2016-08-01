@@ -1,24 +1,12 @@
-import utils
-
-REDUCE_OUTPUT_FILE_PATH = 'reducer'
-
-
 # Input example words: [('Hello', 1), ('Hello', 1), ('World', 1)]
-def start_reduce(words, info_content=''):
-    sorted_words = sorted(words)
-    current_word = ""
-    result = []
-    values = []
-    for i in sorted_words:
-        if current_word != "" and i[0] != current_word:
-            print("Reducer result: %s | %d" % (current_word, sum(values)))
-            result.append((current_word, sum(values)))
-            values = []
-            current_word = i[0]
-            values.append(i[1])
-        elif i[0] == current_word or current_word == "":
-            current_word = i[0]
-            values.append(i[1])
-    print("Reducer result: %s | %d" % (current_word, sum(values)))
-    result.append((current_word, sum(values)))
-    utils.write_content(REDUCE_OUTPUT_FILE_PATH, result)
+def start_reduce(jobber, pairs, info_content=''):
+    intermediate_results_dist = {}
+    results_list = []
+    for item in pairs:
+        intermediate_results_dist.setdefault(item[0], []).append(item[1])
+    for key, val in intermediate_results_dist:
+        word_count = 0
+        for i in val:
+            word_count += i
+        results_list.append((key, word_count))
+    jobber.reduce_results = results_list

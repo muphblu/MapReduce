@@ -52,9 +52,12 @@ class JobTracker:
         chunks_info = self.naming_server.read(data_path)
         chunks_count = len(chunks_info)
         # chunks_per_mapper = chunks_count/self.mappers_num
-        chunks_for_mappers = [[]] * self.mappers_num
+        chunks_for_mappers = []
+        for item in range(self.mappers_num):
+            chunks_for_mappers.append([])
+
         for i in range(chunks_count):
-            chunks_for_mappers[chunks_count % self.mappers_num].append(chunks_info[i])
+            chunks_for_mappers[i % self.mappers_num].append(chunks_info[i])
 
         reducers_ids = [x.id for x in self._get_reducer_servers()]
         for i in range(self.mappers_num):

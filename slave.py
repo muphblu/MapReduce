@@ -7,6 +7,8 @@ from xmlrpc.server import SimpleXMLRPCServer
 import sys
 
 from mapreduce import get_mapped_file
+from mapreduce import MAP_OUTPUT_FILE_PATH
+from mapreduce import REDUCE_OUTPUT_FILE_PATH
 
 import mapreduce
 import utils
@@ -15,8 +17,6 @@ from mapreduce import Jobber
 from master import FILES_ROOT
 
 SLAVE_GENERAL_DIRECTORY_NAME = FILES_ROOT + 'slave_'
-MAP_OUTPUT_FILE_PATH = 'mapper/'
-REDUCE_OUTPUT_FILE_PATH = 'reducer/'
 
 
 class Slave:
@@ -53,10 +53,10 @@ class Slave:
         slaves_info = utils.get_slaves_info()
         this_slave_info = slaves_info[storage_id - 1][1]
 
-        self.storage_server = StorageServer(storage_id, this_slave_info, self.jobber)
         self.jobber = Jobber(self, storage_id, self.master, self.slave_directory_path)
+        self.storage_server = StorageServer(storage_id, this_slave_info, self.jobber)
 
-        self.server = SimpleXMLRPCServer((this_slave_info[0], this_slave_info[1]), logRequests=False)
+        self.server = SimpleXMLRPCServer((this_slave_info[0], this_slave_info[1]), logRequests=False, allow_none=True)
         self.server.register_function(self.storage_server.read, "read")
         self.server.register_function(self.storage_server.write, "write")
         self.server.register_function(self.storage_server.delete, "delete")
@@ -65,6 +65,8 @@ class Slave:
         self.server.register_function(get_mapped_file)
         self.server.register_function(self.jobber.init_mapper)
         self.server.register_function(self.jobber.init_reducer)
+
+        Thread(target=self.server.serve_forever).start()
 
         self.start()
 
@@ -91,10 +93,10 @@ class Slave:
                     chunk_info = utils.get_chuck_info(chunk_info_list[index])
                     main_server = list(filter(lambda x: x.id == chunk_info.main_server_id, self.storage_servers))[0]
                     file_content += main_server.proxy.read(chunk_info.chunk_name)
+                    return file_content
         except:
             # If there are no such path in storages then output error
-            file_content = self.ERROR_NO_PATH
-        return file_content
+            return self.ERROR_NO_PATH
 
     def write(self, path, content):
         """
