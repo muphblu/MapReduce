@@ -93,7 +93,7 @@ class Slave:
                     chunk_info = utils.get_chuck_info(chunk_info_list[index])
                     main_server = list(filter(lambda x: x.id == chunk_info.main_server_id, self.storage_servers))[0]
                     file_content += main_server.proxy.read(chunk_info.chunk_name)
-                    return file_content
+                return file_content
         except:
             # If there are no such path in storages then output error
             return self.ERROR_NO_PATH
