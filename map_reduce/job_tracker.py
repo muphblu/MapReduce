@@ -1,4 +1,8 @@
 # TODO create named tuple JobTrackerOptions for params
+import os
+
+import shutil
+
 import utils
 
 
@@ -16,7 +20,7 @@ class JobTracker:
     # API
     # ==========================================
     def init_naming_server(self, naming_server):
-        self.naming_server = naming_server;
+        self.naming_server = naming_server
 
     # ==========================================
     # RPC API
@@ -34,6 +38,10 @@ class JobTracker:
         :param map_function: mapper function in str
         :param reduce_function: reducer function in str
         """
+        if os.path.exists("files/filesystem/results"):
+            shutil.rmtree("files/filesystem/results")
+        os.mkdir("files/filesystem/results")
+
         self.is_job_finished = False
         self.results.clear()
         self.reduce_fun = reduce_function
