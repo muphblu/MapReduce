@@ -60,6 +60,7 @@ class JobTracker:
             chunks_for_mappers[i % self.mappers_num].append(chunks_info[i])
 
         reducers_ids = [x.id for x in self._get_reducer_servers()]
+        reducers_ids.sort()
         for i in range(self.mappers_num):
             mappers[i].proxy.init_mapper(chunks_for_mappers[i], map_function, reducers_ids)
 
