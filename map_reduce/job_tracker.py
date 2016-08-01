@@ -84,8 +84,8 @@ class JobTracker:
         :param server_id: mapper that finished the work
         """
         self.mappers_status[server_id] = True
-        for mapper in self.mappers_status.items():
-            if not mapper[1]:
+        for key, value in self.mappers_status.items():
+            if not value:
                 return
         self._start_reducers()
 
@@ -113,7 +113,7 @@ class JobTracker:
         reducers = self._get_reducer_servers()
         self.reducers_status = {reducer.id: False for reducer in reducers}
         for reducer in reducers:
-            reducer.proxy.init_reducer(self.mappers_status.keys())
+            reducer.proxy.init_reducer(list(self.mappers_status.keys()))
 
     def _get_mapper_servers(self):
         """
