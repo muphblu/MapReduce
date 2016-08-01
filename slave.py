@@ -64,6 +64,7 @@ class Slave:
         self.server.register_function(self.jobber.get_mapped_file)
         self.server.register_function(self.jobber.init_mapper)
         self.server.register_function(self.jobber.init_reducer)
+        self.server.register_function(self.write, 'write_client')
 
         Thread(target=self.server.serve_forever).start()
 
@@ -180,14 +181,14 @@ class Slave:
     # ===============================
     JOB_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + '\job_content.py'
 
-    def start_the_job(self, path):
+    def start_the_job(self, path, map_fun_path, reduce_fun_path):
         """
         Send a job to job tracker
         :param path:
         :return:
         """
-        mapper_content = utils.get_map_code()
-        reducer_content = utils.get_reducer_code()
+        mapper_content = utils.get_map_code(map_fun_path)
+        reducer_content = utils.get_reducer_code(reduce_fun_path)
         self.master.start_job(path, mapper_content, reducer_content)
         print('Job is received successfully')
 
@@ -261,8 +262,14 @@ class Slave:
             path = user_input.split('(', 3)[1][:-1]
             self.delete_directory(path)
         elif 'dojob' in user_input.lower():
-            path = user_input.split('(', 3)[1][:-1]
-            self.start_the_job(path)
+            params= user_input.split(' ')
+            path = params[1]
+            map_fun_path = 'mapper_content.py'
+            reduce_fun_path = 'reducer_content.py'
+            if len(params)>2:
+                map_fun_path = params[2]
+                reduce_fun_path = params[3]
+            self.start_the_job(path, map_fun_path, reduce_fun_path)
 
     def start(self):
 
@@ -277,6 +284,6 @@ class Slave:
                            "Rmdir(<path of a directory>) - Delete a file or a directory \n"
                            "List(<directory>) - List files in a directory with sizes \n"
                            "Size(<path of a file>) - Size of a file \n"
-                           "DoJob(<path of a file>) - Sends a job to job tracker \n"
+                           "DoJob <path of a file> <path to map fun> <path to reduce fun> - Sends a job to job tracker \n"
                            "Writef(<path of a file>) - Write\create a file from existing file\n")
             self._handle_user_input(action)

@@ -33,14 +33,11 @@ def start_reduce(jobber, pairs, info_content=''):
         for i in val:
             word_count += i
         jobber.reduce_results.append((key, word_count))
-    # jobber.reduce_results = results_list
+        # jobber.reduce_results = results_list
 
 
 def split_into_words(string):
     return string.split()
-
-
-
 
 
 class Jobber:
@@ -150,4 +147,5 @@ class Jobber:
             # words = [line.strip() for line in self.servers[mapper].proxy.get_mapped_file(self.server_id)]
         start_reduce(self, words)
         self.write_reduce_results_to_file()
-        self.master_proxy.reduce_finished(self.server_id, 'results/result_' + str(self.server_id))
+        self.master_proxy.reduce_finished(self.server_id,
+                                          'files/slave_' + str(self.server_id) + '/reducer/results')

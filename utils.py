@@ -66,16 +66,16 @@ def get_file_content(path):
         return file.read()
 
 
-MAPPER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + '\mapper_content.py'
-REDUCER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__)) + r'\reducer_content.py'
+MAPPER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__))
+REDUCER_CONTENT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 
-def get_map_code():
-    return utils.get_file_content(MAPPER_CONTENT_PATH)
+def get_map_code(map_fun_path):
+    return utils.get_file_content(MAPPER_CONTENT_PATH + '/' + map_fun_path)
 
 
-def get_reducer_code():
-    return utils.get_file_content(REDUCER_CONTENT_PATH)
+def get_reducer_code(reduce_fun_path):
+    return utils.get_file_content(REDUCER_CONTENT_PATH + '/' + reduce_fun_path)
 
 
 class DirFileEnum:

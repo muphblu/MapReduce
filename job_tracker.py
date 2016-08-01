@@ -4,6 +4,7 @@ import os
 import shutil
 
 import utils
+import mapreduce
 
 
 class JobTracker:
@@ -132,6 +133,14 @@ class JobTracker:
         return self.slaves[self.mappers_num:self.mappers_num + self.reducers_num]
 
     def _process_results(self):
+        result = []
+        for x in self.results:
+            with open(x, 'r') as file:
+                content = file.read()
+            result.extend(mapreduce.Jobber.split_to_list(content))
+        result.sort(key=lambda x: x[1])
+        for x in result:
+            print(str(x))
         self.is_job_finished = True
         pass
 

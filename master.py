@@ -3,7 +3,7 @@ import shutil
 import time
 import sys
 import utils
-from map_reduce.job_tracker import JobTracker
+from job_tracker import JobTracker
 from naming_server import NamingServer
 from naming_server import FILES_ROOT
 from naming_server import NAMING_REPOSITORY_ROOT
