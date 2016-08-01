@@ -15,3 +15,4 @@ COPY reducer_content.py /src/ga1/
 COPY slave.py /src/ga1/
 COPY storage_server.py /src/ga1/
 COPY utils.py /src/ga1/
+COPY src.txt /src.txt
